@@ -40,10 +40,13 @@
   animation-delay: -6s;
 }
 @keyframes blobDrift {
-  from { transform: translate(0, 0) scale(1); }
-  to   { transform: translate(20px, 30px) scale(1.08); }
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(20px, 30px) scale(1.08);
+  }
 }
-
 
 /* ════════════════════════════════════════════
    Outer card — two-column shell
@@ -52,7 +55,7 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 860px;          /* wider for two columns */
+  max-width: 860px; /* wider for two columns */
   background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(24px) saturate(1.4);
   -webkit-backdrop-filter: blur(24px) saturate(1.4);
@@ -63,22 +66,27 @@
     0 2px 8px rgba(0, 0, 0, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
   display: grid;
-  grid-template-columns: 1fr 1px 400px;   /* left | divider | right */
+  grid-template-columns: 1fr 1px 400px; /* left | divider | right */
   animation: cardIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
   overflow: hidden;
 }
 @keyframes cardIn {
-  from { opacity: 0; transform: translateY(28px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* ── Vertical divider between columns ── */
 .colDivider {
-  background: linear-gradient(to bottom, transparent 5%, #E5E7EB 30%, #E5E7EB 70%, transparent 95%);
+  background: linear-gradient(to bottom, transparent 5%, #e5e7eb 30%, #e5e7eb 70%, transparent 95%);
   width: 1px;
   align-self: stretch;
 }
-
 
 /* ════════════════════════════════════════════
    LEFT column  — video + controls
@@ -110,8 +118,10 @@
   border-radius: 14px;
   overflow: hidden;
   background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
-  box-shadow: 0 4px 24px rgba(79, 70, 229, 0.28), 0 1px 4px rgba(0,0,0,0.14);
-  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow:
+    0 4px 24px rgba(79, 70, 229, 0.28),
+    0 1px 4px rgba(0, 0, 0, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   flex-shrink: 0;
 }
 
@@ -123,7 +133,7 @@
   height: 100%;
   object-fit: cover;
   border-radius: inherit;
-  transform: scaleX(-1);  /* selfie mirror */
+  transform: scaleX(-1); /* selfie mirror */
   background: #000;
 }
 
@@ -136,22 +146,26 @@
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.32) 100%);
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0.32) 100%);
 }
 .avatarRing {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4F46E5, #7C3AED);
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 0 3px rgba(255,255,255,0.15), 0 4px 16px rgba(79,70,229,0.4);
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.15),
+    0 4px 16px rgba(79, 70, 229, 0.4);
 }
-.avatarRing svg { color: white; }
+.avatarRing svg {
+  color: white;
+}
 .previewLabel {
   font-size: 0.7rem;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255, 255, 255, 0.6);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   font-weight: 500;
@@ -170,46 +184,53 @@
   gap: 0.4rem;
   padding: 0.55rem 0.875rem;
   border-radius: 999px;
-  border: 1.5px solid #E5E7EB;
+  border: 1.5px solid #e5e7eb;
   background: #ffffff;
   color: #374151;
   font-family: inherit;
   font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease,
-              transform 0.15s ease, box-shadow 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   user-select: none;
 }
 .toggleBtn:hover {
   background: #f5f3ff;
   border-color: #c4b5fd;
-  color: #4F46E5;
+  color: #4f46e5;
   transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(79,70,229,0.14);
+  box-shadow: 0 3px 10px rgba(79, 70, 229, 0.14);
 }
-.toggleBtn:active { transform: translateY(0); }
+.toggleBtn:active {
+  transform: translateY(0);
+}
 .toggleBtn.active {
-  background: linear-gradient(135deg, #4F46E5, #7C3AED);
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
   border-color: transparent;
   color: #ffffff;
   box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
 }
 .toggleBtn.active:hover {
-  background: linear-gradient(135deg, #4338CA, #6D28D9);
+  background: linear-gradient(135deg, #4338ca, #6d28d9);
   color: #ffffff;
 }
-.toggleBtn svg { flex-shrink: 0; }
+.toggleBtn svg {
+  flex-shrink: 0;
+}
 
 /* Small tip under controls */
 .previewTip {
   font-size: 0.75rem;
-  color: #9CA3AF;
+  color: #9ca3af;
   text-align: center;
   margin-top: -0.25rem;
 }
-
 
 /* ════════════════════════════════════════════
    RIGHT column — form / tabs
@@ -234,28 +255,29 @@
 }
 .rightHeader p {
   font-size: 0.875rem;
-  color: #6B7280;
+  color: #6b7280;
   margin: 0;
   font-weight: 400;
   line-height: 1.5;
 }
 
-
 /* ─── Tab switcher ─── */
-.tabContainer { width: 100%; }
+.tabContainer {
+  width: 100%;
+}
 .tabSelect {
   display: flex;
   gap: 0.25rem;
   padding: 0.25rem;
   margin: 0 0 1.25rem;
-  background: #F3F4F6;
-  border: 1px solid #E5E7EB;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
 }
 .tabSelect > * {
   flex: 1;
   background: transparent;
-  color: #6B7280;
+  color: #6b7280;
   border: none;
   border-radius: 9px;
   padding: 0.5rem 0;
@@ -263,15 +285,19 @@
   font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    box-shadow 0.2s;
 }
-.tabSelect > *:hover { color: #374151; }
+.tabSelect > *:hover {
+  color: #374151;
+}
 .tabSelect > [aria-pressed='true'] {
   background: #ffffff;
   color: #111827;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
-
 
 /* ─── Tab content ─── */
 .tabContent {
@@ -282,10 +308,9 @@
 .tabContent p {
   margin: 0;
   font-size: 0.875rem;
-  color: #6B7280;
+  color: #6b7280;
   line-height: 1.5;
 }
-
 
 /* ─── Inputs ─── */
 .inputRow {
@@ -303,7 +328,7 @@
 .inputField {
   width: 100%;
   padding: 0.72rem 1rem;
-  border: 1.5px solid #E5E7EB;
+  border: 1.5px solid #e5e7eb;
   border-radius: 12px;
   background: #ffffff;
   color: #111827;
@@ -311,15 +336,18 @@
   font-size: 0.9375rem;
   font-weight: 400;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
-.inputField::placeholder { color: #9CA3AF; }
+.inputField::placeholder {
+  color: #9ca3af;
+}
 .inputField:focus {
-  border-color: #4F46E5;
+  border-color: #4f46e5;
   box-shadow: 0 0 0 3.5px rgba(79, 70, 229, 0.15);
 }
-
 
 /* ─── Checkbox ─── */
 .checkboxRow {
@@ -330,7 +358,7 @@
 .checkboxRow input[type='checkbox'] {
   width: 16px;
   height: 16px;
-  accent-color: #4F46E5;
+  accent-color: #4f46e5;
   cursor: pointer;
 }
 .checkboxRow label {
@@ -340,21 +368,19 @@
   font-weight: 400;
 }
 
-
 /* ─── Separator ─── */
 .separator {
   width: 100%;
   border: none;
-  border-top: 1px solid #E5E7EB;
+  border-top: 1px solid #e5e7eb;
   margin: 0.25rem 0;
 }
-
 
 /* ─── Textarea ─── */
 .textArea {
   width: 100%;
   padding: 0.72rem 1rem;
-  border: 1.5px solid #E5E7EB;
+  border: 1.5px solid #e5e7eb;
   border-radius: 12px;
   background: #ffffff;
   color: #111827;
@@ -362,16 +388,19 @@
   font-size: 0.875rem;
   outline: none;
   resize: vertical;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   line-height: 1.5;
 }
-.textArea::placeholder { color: #9CA3AF; }
+.textArea::placeholder {
+  color: #9ca3af;
+}
 .textArea:focus {
-  border-color: #4F46E5;
+  border-color: #4f46e5;
   box-shadow: 0 0 0 3.5px rgba(79, 70, 229, 0.15);
 }
-
 
 /* ─── Join / primary button ─── */
 .joinBtn {
@@ -379,13 +408,16 @@
   padding: 0.85rem 1rem;
   border-radius: 12px;
   border: none;
-  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
   color: #ffffff;
   font-family: inherit;
   font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
   box-shadow: 0 4px 15px rgba(79, 70, 229, 0.35);
   letter-spacing: 0.01em;
   margin-top: 0.25rem;
@@ -396,14 +428,13 @@
 }
 .joinBtn:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.30);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
 }
 .joinBtn:disabled {
-  opacity: 0.40;
+  opacity: 0.4;
   cursor: not-allowed;
   box-shadow: none;
 }
-
 
 /* ════════════════════════════════════════════
    Footer
@@ -411,18 +442,19 @@
 .footer {
   margin-top: 1.25rem;
   font-size: 0.78rem;
-  color: #9CA3AF;
+  color: #9ca3af;
   text-align: center;
   z-index: 1;
 }
 .footer a {
-  color: #4F46E5;
+  color: #4f46e5;
   text-decoration: none;
   font-weight: 500;
   transition: opacity 0.2s;
 }
-.footer a:hover { opacity: 0.75; }
-
+.footer a:hover {
+  opacity: 0.75;
+}
 
 /* ════════════════════════════════════════════
    Responsive — stack columns on small screens
@@ -435,8 +467,18 @@
   .colDivider {
     width: 100%;
     height: 1px;
-    background: linear-gradient(to right, transparent 5%, #E5E7EB 30%, #E5E7EB 70%, transparent 95%);
+    background: linear-gradient(
+      to right,
+      transparent 5%,
+      #e5e7eb 30%,
+      #e5e7eb 70%,
+      transparent 95%
+    );
   }
-  .leftCol  { padding: 1.75rem 1.75rem 1rem; }
-  .rightCol { padding: 1rem 1.75rem 1.75rem; }
+  .leftCol {
+    padding: 1.75rem 1.75rem 1rem;
+  }
+  .rightCol {
+    padding: 1rem 1.75rem 1.75rem;
+  }
 }

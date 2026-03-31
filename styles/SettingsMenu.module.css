@@ -4,8 +4,8 @@
   display: flex;
   gap: 0.25rem;
   padding: 0.25rem;
-  background: #F3F4F6;
-  border: 1px solid #E5E7EB;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   margin-bottom: 1.25rem;
 }
@@ -16,25 +16,28 @@
   border-radius: 9px;
   border: none !important;
   background: transparent !important;
-  color: #6B7280 !important;
+  color: #6b7280 !important;
   font-family: 'Inter', sans-serif;
   font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    box-shadow 0.2s;
   box-shadow: none !important;
   transform: none !important;
 }
 
 .tabs > .tab:hover {
   color: #374151 !important;
-  background: rgba(255,255,255,0.6) !important;
+  background: rgba(255, 255, 255, 0.6) !important;
   transform: none !important;
 }
 
 .tabs > .tab[aria-pressed='true'] {
   background: #ffffff !important;
-  color: #4F46E5 !important;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.10) !important;
+  color: #4f46e5 !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
   transform: none !important;
 }
