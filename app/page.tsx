@@ -1,8 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
-import React, { Suspense, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import { encodePassphrase, generateRoomId, randomString } from '@/lib/client-utils';
 import styles from '../styles/Home.module.css';
 
@@ -205,32 +205,6 @@ function MediaControls({
   );
 }
 
-/* ─────────────────────── Tab Switcher ─────────────────────── */
-function Tabs(props: React.PropsWithChildren<{}>) {
-  const searchParams = useSearchParams();
-  const tabIndex = searchParams?.get('tab') === 'custom' ? 1 : 0;
-  const router = useRouter();
-
-  function onTabSelected(index: number) {
-    router.push(`/?tab=${index === 1 ? 'custom' : 'demo'}`);
-  }
-
-  const tabs = React.Children.map(props.children, (child, index) => (
-    <button key={index} onClick={() => onTabSelected(index)} aria-pressed={tabIndex === index}>
-      {/* @ts-ignore */}
-      {child?.props.label}
-    </button>
-  ));
-
-  return (
-    <div className={styles.tabContainer}>
-      <div className={styles.tabSelect}>{tabs}</div>
-      {/* @ts-ignore */}
-      {props.children[tabIndex]}
-    </div>
-  );
-}
-
 /* ─────────────────────── Demo Tab ─────────────────────── */
 function DemoMeetingTab(props: { label: string }) {
   const router = useRouter();
@@ -247,8 +221,6 @@ function DemoMeetingTab(props: { label: string }) {
 
   return (
     <div className={styles.tabContent}>
-      <p>Jump into a live demo room no account required.</p>
-
       <div className={styles.inputRow}>
         <label className={styles.inputLabel} htmlFor="demo-name">
           Your name
@@ -301,91 +273,6 @@ function DemoMeetingTab(props: { label: string }) {
   );
 }
 
-/* ─────────────────────── Custom Tab ─────────────────────── */
-function CustomConnectionTab(props: { label: string }) {
-  const router = useRouter();
-  const [e2ee, setE2ee] = useState(false);
-  const [sharedPassphrase, setSharedPassphrase] = useState(randomString(64));
-
-  const onSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target as HTMLFormElement);
-    const serverUrl = formData.get('serverUrl');
-    const token = formData.get('token');
-    router.push(
-      e2ee
-        ? `/custom/?liveKitUrl=${serverUrl}&token=${token}#${encodePassphrase(sharedPassphrase)}`
-        : `/custom/?liveKitUrl=${serverUrl}&token=${token}`,
-    );
-  };
-
-  return (
-    <form className={styles.tabContent} onSubmit={onSubmit}>
-      <p>Connect with a custom WPC server and token.</p>
-
-      <div className={styles.inputRow}>
-        <label className={styles.inputLabel} htmlFor="serverUrl">
-          Server URL
-        </label>
-        <input
-          id="serverUrl"
-          name="serverUrl"
-          className={styles.inputField}
-          type="url"
-          placeholder="wss://*.wpc.cloud"
-          required
-        />
-      </div>
-
-      <div className={styles.inputRow}>
-        <label className={styles.inputLabel} htmlFor="token">
-          Access Token
-        </label>
-        <textarea
-          id="token"
-          name="token"
-          className={styles.textArea}
-          placeholder="Paste your token here"
-          required
-          rows={4}
-        />
-      </div>
-
-      <div className={styles.checkboxRow}>
-        <input
-          id="custom-e2ee"
-          type="checkbox"
-          checked={e2ee}
-          onChange={(ev) => setE2ee(ev.target.checked)}
-        />
-        <label htmlFor="custom-e2ee">Enable end-to-end encryption</label>
-      </div>
-
-      {e2ee && (
-        <div className={styles.inputRow}>
-          <label className={styles.inputLabel} htmlFor="custom-passphrase">
-            Passphrase
-          </label>
-          <input
-            id="custom-passphrase"
-            className={styles.inputField}
-            type="password"
-            placeholder="Shared passphrase"
-            value={sharedPassphrase}
-            onChange={(ev) => setSharedPassphrase(ev.target.value)}
-          />
-        </div>
-      )}
-
-      <hr className={styles.separator} />
-
-      <button id="connect-btn" className={styles.joinBtn} type="submit">
-        Connect →
-      </button>
-    </form>
-  );
-}
-
 /* ─────────────────────── Page (root) ─────────────────────── */
 export default function Page() {
   // Shared state between VideoPreview and MediaControls
@@ -400,11 +287,13 @@ export default function Page() {
           <div className={styles.leftCol}>
             <div className={styles.brandHeader}>
               <Image
-                src="/images/wpc-logo.svg"
+                src="/images/main.webp"
                 alt="WPC Video Conferencing"
                 width={160}
-                height={32}
+                height={48}
+                style={{ objectFit: 'contain' }}
               />
+              <span className={styles.brandName}>WPC Video Conference</span>
             </div>
 
             <VideoPreview camOn={camOn} />
@@ -426,30 +315,10 @@ export default function Page() {
           <div className={styles.rightCol}>
             <div className={styles.rightHeader}>
               <h1>Join a Meeting</h1>
-              <p>Professional video conferencing for teams. No account required for demo.</p>
+              <p>Professional video conferencing for teams.</p>
             </div>
 
-            <Suspense
-              fallback={
-                <div
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#9CA3AF',
-                    fontSize: '0.875rem',
-                  }}
-                >
-                  Loading…
-                </div>
-              }
-            >
-              <Tabs>
-                <DemoMeetingTab label="Demo" />
-                <CustomConnectionTab label="Custom" />
-              </Tabs>
-            </Suspense>
+            <DemoMeetingTab label="Join a Meeting" />
           </div>
         </div>
 
