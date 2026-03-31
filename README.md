@@ -1,27 +1,7 @@
-# WPC Video Conferencing
-
-<p>
-  <a href="https://meet.livekit.io"><strong>Try the demo</strong></a>
-  •
-  <a href="https://github.com/livekit/components-js">LiveKit Components</a>
-  •
-  <a href="https://docs.livekit.io/">LiveKit Docs</a>
-  •
-  <a href="https://livekit.io/cloud">LiveKit Cloud</a>
-  •
-  <a href="https://blog.livekit.io/">Blog</a>
-</p>
-
-<br>
-
 ## Tech Stack
 
 - This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 - App is built with [@livekit/components-react](https://github.com/livekit/components-js/) library.
-
-## Demo
-
-Give it a try at https://meet.livekit.io.
 
 ## Dev Setup
 
