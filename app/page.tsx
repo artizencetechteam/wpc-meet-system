@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { encodePassphrase, generateRoomId, randomString } from '@/lib/client-utils';
@@ -344,7 +345,7 @@ export default function Page() {
           {/* ── LEFT COLUMN: brand + video preview + toggles ── */}
           <div className={styles.leftCol}>
             <div className={styles.brandHeader}>
-              <img src="/images/wpc-logo.svg" alt="WPC Video Conferencing" width="160" height="32" />
+              <Image src="/images/wpc-logo.svg" alt="WPC Video Conferencing" width={160} height={32} />
             </div>
 
             <VideoPreview camOn={camOn} />

@@ -1,4 +1,5 @@
 import { videoCodecs } from 'livekit-client';
+import Link from 'next/link';
 import { VideoConferenceClientImpl } from './VideoConferenceClientImpl';
 import { isVideoCodec } from '@/lib/types';
 
@@ -9,7 +10,7 @@ function ErrorPage({ title, description }: { title: string; description: string 
         <div className="wpc-error-icon">⚠️</div>
         <h2>{title}</h2>
         <p>{description}</p>
-        <a href="/">← Back to Home</a>
+        <Link href="/">← Back to Home</Link>
       </div>
     </div>
   );

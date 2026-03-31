@@ -26,7 +26,7 @@ export function RecordingIndicator() {
         });
       }
     }
-  }, [isRecording]);
+  }, [isRecording, wasRecording]);
 
   return (
     <div
