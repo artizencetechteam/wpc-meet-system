@@ -11,16 +11,11 @@ export const metadata: Metadata = {
   },
   description:
     'WPC Video Conferencing provides seamless, high-quality, real-time audio and video experiences.',
-  twitter: {
-    creator: '@livekitted',
-    site: '@livekitted',
-    card: 'summary_large_image',
-  },
   openGraph: {
     url: 'https://wpc-video.example.com',
     images: [
       {
-        url: 'https://meet.livekit.io/images/livekit-meet-open-graph.png',
+        url: '',
         width: 2000,
         height: 1000,
         type: 'image/png',
@@ -36,10 +31,10 @@ export const metadata: Metadata = {
     apple: [
       {
         rel: 'apple-touch-icon',
-        url: '/images/livekit-apple-touch.png',
+        url: '',
         sizes: '180x180',
       },
-      { rel: 'mask-icon', url: '/images/livekit-safari-pinned-tab.svg', color: '#070707' },
+      { rel: 'mask-icon', url: '', color: '#070707' },
     ],
   },
 };
