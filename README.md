@@ -1,7 +1,3 @@
-<a href="https://livekit.io/">
-  <img src="./.github/assets/livekit-mark.png" alt="LiveKit logo" width="100" height="100">
-</a>
-
 # WPC Video Conferencing
 
 <p>
@@ -17,10 +13,6 @@
 </p>
 
 <br>
-
-WPC Video Conferencing is a clean, modern video conferencing app built for professionals.
-
-![WPC Video Conferencing screenshot](./public/images/wpc-logo.svg)
 
 ## Tech Stack
 
