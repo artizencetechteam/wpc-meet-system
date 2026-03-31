@@ -1,0 +1,444 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ══════════════════════════════════════════
+   Design tokens — indigo/purple WPC theme
+══════════════════════════════════════════ */
+:root {
+  --wpc-primary:       #4F46E5;
+  --wpc-primary-dark:  #4338CA;
+  --wpc-secondary:     #7C3AED;
+  --wpc-bg:            #F5F3FF;
+  --wpc-surface:       #FFFFFF;
+  --wpc-border:        #E5E7EB;
+  --wpc-text:          #111827;
+  --wpc-text-muted:    #6B7280;
+  --wpc-shadow-sm:     0 1px 3px rgba(0,0,0,0.08);
+  --wpc-shadow-md:     0 4px 16px rgba(79,70,229,0.14);
+  --wpc-shadow-lg:     0 8px 40px rgba(79,70,229,0.18);
+  --wpc-radius:        14px;
+  --wpc-radius-sm:     10px;
+
+  /* LiveKit component overrides → indigo accent */
+  --lk-bg:             #F9FAFB;
+  --lk-fg:             #111827;
+  --lk-text:           #111827;
+  --lk-text-color:     #111827;
+  --lk-border:         #E5E7EB;
+  --lk-border-color:   #E5E7EB;
+  --lk-control-bar-bg: rgba(255,255,255,0.95);
+  --lk-accent:         #4F46E5;
+  --lk-accent-fg:      #FFFFFF;
+  --lk-danger:         #EF4444;
+  --lk-success:        #10B981;
+  --lk-border-radius:  var(--wpc-radius);
+  --lk-box-shadow:     var(--wpc-shadow-md);
+}
+
+/* ══════════════════════════════════════════
+   Reset & base
+══════════════════════════════════════════ */
+* { box-sizing: border-box; }
+
+html {
+  color-scheme: light;
+  background: var(--wpc-bg);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  color: var(--wpc-text);
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+p, label, span, h1, h2, h3, h4, h5, h6, div {
+  color: inherit;
+}
+
+/* ══════════════════════════════════════════
+   LiveKit PreJoin screen theming
+   (used on the /rooms/[name] waiting page)
+══════════════════════════════════════════ */
+
+/* Outer wrapper injected in PageClientImpl */
+.prejoin-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  width: 100%;
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8eaf6 40%, #ede9fe 100%);
+  padding: 2rem 1rem;
+}
+
+.lk-prejoin {
+  background: rgba(255,255,255,0.80) !important;
+  backdrop-filter: blur(20px) saturate(1.4) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.4) !important;
+  border: 1px solid rgba(255,255,255,0.9) !important;
+  border-radius: 20px !important;
+  box-shadow: var(--wpc-shadow-lg) !important;
+  padding: 2rem !important;
+  max-width: 480px !important;
+  width: 100% !important;
+  animation: cardIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both !important;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Video preview area inside PreJoin */
+.lk-prejoin .lk-video-container,
+.lk-prejoin video {
+  border-radius: 14px !important;
+  overflow: hidden !important;
+}
+
+/* PreJoin username input */
+.lk-prejoin .lk-username-input,
+.lk-prejoin input[type="text"] {
+  border-radius: 12px !important;
+  border: 1.5px solid var(--wpc-border) !important;
+  background: #fff !important;
+  color: var(--wpc-text) !important;
+  font-family: 'Inter', sans-serif !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+.lk-prejoin .lk-username-input:focus,
+.lk-prejoin input[type="text"]:focus {
+  border-color: var(--wpc-primary) !important;
+  box-shadow: 0 0 0 3.5px rgba(79,70,229,0.15) !important;
+}
+
+/* PreJoin submit / join button */
+.lk-prejoin .lk-join-button,
+.lk-prejoin button[type="submit"] {
+  background: linear-gradient(135deg, var(--wpc-primary) 0%, var(--wpc-secondary) 100%) !important;
+  border-radius: 12px !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 15px rgba(79,70,229,0.35) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+.lk-prejoin .lk-join-button:hover:not(:disabled),
+.lk-prejoin button[type="submit"]:hover:not(:disabled) {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(79,70,229,0.45) !important;
+}
+
+/* ══════════════════════════════════════════
+   LiveKit in-room component overrides
+══════════════════════════════════════════ */
+[data-lk-theme="default"],
+.lk-room-container {
+  --lk-bg:             #F9FAFB !important;
+  --lk-border:         #E5E7EB !important;
+  --lk-border-color:   #E5E7EB !important;
+  --lk-fg:             #111827 !important;
+  --lk-text:           #111827 !important;
+  --lk-text-color:     #111827 !important;
+  --lk-control-bar-bg: #FFFFFF !important;
+  --lk-accent:         #4F46E5 !important;
+  --lk-accent-fg:      #FFFFFF !important;
+  --lk-danger:         #EF4444 !important;
+  --lk-success:        #10B981 !important;
+  color: #111827 !important;
+}
+
+/* Control bar */
+.lk-control-bar {
+  background: rgba(255,255,255,0.95) !important;
+  border-top: 1px solid var(--wpc-border) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  padding: 0.75rem 1.5rem !important;
+  gap: 0.75rem !important;
+}
+
+/* Control bar buttons */
+.lk-control-bar .lk-button,
+.lk-button {
+  border-radius: 10px !important;
+  font-weight: 500 !important;
+  font-family: 'Inter', sans-serif !important;
+  transition: all 0.2s ease !important;
+  border: 1.5px solid var(--wpc-border) !important;
+  background: #fff !important;
+  color: var(--wpc-text) !important;
+}
+.lk-button:hover:not(:disabled) {
+  background: #F5F3FF !important;
+  border-color: #C4B5FD !important;
+  color: var(--wpc-primary) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 10px rgba(79,70,229,0.14) !important;
+}
+
+/* Active/pressed control button */
+.lk-button[aria-pressed="true"],
+.lk-track-toggle[data-lk-enabled="true"] {
+  background: linear-gradient(135deg, var(--wpc-primary), var(--wpc-secondary)) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(79,70,229,0.35) !important;
+}
+
+/* Disconnect / leave button — keep red */
+.lk-disconnect-button {
+  background: #FEE2E2 !important;
+  border-color: #FECACA !important;
+  color: var(--lk-danger) !important;
+}
+.lk-disconnect-button:hover:not(:disabled) {
+  background: var(--lk-danger) !important;
+  border-color: var(--lk-danger) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(239,68,68,0.35) !important;
+}
+
+/* Participant tiles */
+.lk-participant-tile {
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+}
+.lk-participant-tile:focus-within,
+.lk-participant-tile--speaking {
+  outline: 2px solid var(--wpc-primary) !important;
+  outline-offset: 2px !important;
+}
+.lk-participant-name,
+.lk-participant-metadata {
+  color: #fff !important;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+/* Chat panel — override LiveKit dark-theme variables */
+[data-lk-theme="default"] .lk-chat,
+.lk-room-container .lk-chat {
+  /* Re-map the dark CSS vars to light equivalents */
+  --lk-bg2:    #F9FAFB !important;   /* chat panel bg (was #1d1d1d) */
+  --lk-bg5:    #EDE9FE !important;   /* local message bubble bg (was #444) */
+  --lk-fg5:    #374151 !important;   /* meta text / sender name (was near-white) */
+  --lk-accent4:#C7D2FE !important;   /* remote message bubble bg (was dark blue) */
+
+  background: rgba(255,255,255,0.97) !important;
+  border-left: 1px solid var(--wpc-border) !important;
+  backdrop-filter: blur(12px) !important;
+  color: #111827 !important;
+}
+
+/* Chat header */
+.lk-chat-header {
+  color: #111827 !important;
+  border-bottom: 1px solid var(--wpc-border);
+}
+.lk-chat-header * {
+  color: #111827 !important;
+}
+
+/* ── Chat close (X) button — no movement on hover ── */
+.lk-chat-header .lk-close-button,
+.lk-chat-header .lk-close-button:hover,
+.lk-chat-header .lk-close-button:active {
+  transform: none !important;   /* cancel the global .lk-button:hover translateY */
+}
+.lk-chat-header .lk-close-button:hover {
+  background: #FEE2E2 !important;
+  border-color: #FECACA !important;
+  color: #EF4444 !important;
+  box-shadow: 0 2px 8px rgba(239,68,68,0.18) !important;
+}
+.lk-chat-header .lk-close-button:active {
+  background: #FCA5A5 !important;
+}
+
+/* Messages list */
+.lk-chat-messages {
+  color: #111827 !important;
+}
+
+/* Individual entry row — no pill background on the row itself */
+.lk-chat-entry {
+  background: transparent !important;
+  border: none !important;
+  color: #111827 !important;
+}
+
+/* Meta row: sender name + timestamp */
+.lk-chat-entry .lk-meta-data {
+  color: #6B7280 !important;
+}
+.lk-chat-entry .lk-meta-data .lk-participant-name {
+  color: var(--wpc-primary) !important;
+  font-weight: 600 !important;
+}
+.lk-chat-entry .lk-meta-data .lk-timestamp {
+  color: #9CA3AF !important;
+}
+
+/* ── The actual message pill ── */
+/* Local (own) messages */
+.lk-chat-entry[data-lk-message-origin="local"] .lk-message-body {
+  background-color: #EDE9FE !important;   /* soft indigo tint */
+  color: #111827 !important;
+}
+/* Remote (other people) messages */
+.lk-chat-entry[data-lk-message-origin="remote"] .lk-message-body {
+  background-color: #E0E7FF !important;   /* light periwinkle */
+  color: #111827 !important;
+}
+/* Catch-all for any .lk-message-body */
+.lk-message-body {
+  color: #111827 !important;
+}
+
+/* Links inside chat */
+.lk-chat-entry a,
+.lk-chat-link {
+  color: var(--wpc-primary) !important;
+}
+
+/* Chat input */
+.lk-chat-form {
+  border-top: 1px solid var(--wpc-border) !important;
+  background: #fff !important;
+}
+.lk-chat-form-input {
+  border-radius: 10px !important;
+  border: 1.5px solid var(--wpc-border) !important;
+  background: #F9FAFB !important;
+  color: #111827 !important;
+  font-family: 'Inter', sans-serif !important;
+}
+.lk-chat-form-input:focus {
+  border-color: var(--wpc-primary) !important;
+  box-shadow: 0 0 0 3px rgba(79,70,229,0.15) !important;
+  outline: none !important;
+  background: #fff !important;
+}
+.lk-chat-form-input::placeholder {
+  color: #9CA3AF !important;
+}
+
+/* Send button */
+.lk-chat-form-button {
+  background: linear-gradient(135deg, var(--wpc-primary), var(--wpc-secondary)) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+}
+
+/* Generic inputs across the app */
+input[type="text"],
+input[type="url"],
+input[type="password"],
+textarea,
+.lk-form-control {
+  background: #fff !important;
+  border: 1.5px solid var(--wpc-border) !important;
+  color: var(--wpc-text) !important;
+  border-radius: 12px !important;
+  padding: 0.72rem 1rem;
+  font-family: 'Inter', sans-serif !important;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+input[type="text"]::placeholder,
+input[type="url"]::placeholder,
+input[type="password"]::placeholder,
+textarea::placeholder,
+.lk-form-control::placeholder {
+  color: #9CA3AF !important;
+}
+input[type="text"]:focus,
+input[type="url"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+.lk-form-control:focus {
+  outline: none;
+  border-color: var(--wpc-primary) !important;
+  box-shadow: 0 0 0 3.5px rgba(79,70,229,0.15) !important;
+}
+
+/* Error pages (custom/page.tsx missing url/token) */
+.wpc-error-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8eaf6 40%, #ede9fe 100%);
+}
+.wpc-error-card {
+  background: rgba(255,255,255,0.82);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.9);
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 8px 40px rgba(79,70,229,0.12);
+}
+.wpc-error-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #FEE2E2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  font-size: 1.5rem;
+}
+.wpc-error-card h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.5rem;
+}
+.wpc-error-card p {
+  font-size: 0.875rem;
+  color: #6B7280;
+  margin: 0 0 1.5rem;
+}
+.wpc-error-card a {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #4F46E5, #7C3AED);
+  color: #fff;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 15px rgba(79,70,229,0.35);
+}
+.wpc-error-card a:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(79,70,229,0.45);
+}
+
+/* ══════════════════════════════════════════
+   Toast notifications (react-hot-toast)
+══════════════════════════════════════════ */
+.wpc-toast {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.875rem !important;
+  border-radius: 12px !important;
+  box-shadow: var(--wpc-shadow-md) !important;
+  border: 1px solid var(--wpc-border) !important;
+  background: #fff !important;
+  color: var(--wpc-text) !important;
+}

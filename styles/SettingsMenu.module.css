@@ -1,0 +1,40 @@
+/* ── Settings Menu Tabs ── */
+.tabs {
+  position: relative;
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background: #F3F4F6;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+}
+
+.tabs > .tab {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border-radius: 9px;
+  border: none !important;
+  background: transparent !important;
+  color: #6B7280 !important;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.tabs > .tab:hover {
+  color: #374151 !important;
+  background: rgba(255,255,255,0.6) !important;
+  transform: none !important;
+}
+
+.tabs > .tab[aria-pressed='true'] {
+  background: #ffffff !important;
+  color: #4F46E5 !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.10) !important;
+  transform: none !important;
+}
