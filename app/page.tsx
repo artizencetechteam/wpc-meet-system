@@ -256,7 +256,7 @@ function DemoMeetingTab(props: { label: string }) {
         />
       </div>
 
-      <div className={styles.checkboxRow}>
+      {/* <div className={styles.checkboxRow}>
         <input
           id="demo-e2ee"
           type="checkbox"
@@ -264,7 +264,7 @@ function DemoMeetingTab(props: { label: string }) {
           onChange={(ev) => setE2ee(ev.target.checked)}
         />
         <label htmlFor="demo-e2ee">Enable end-to-end encryption</label>
-      </div>
+      </div> */}
 
       {e2ee && (
         <div className={styles.inputRow}>
