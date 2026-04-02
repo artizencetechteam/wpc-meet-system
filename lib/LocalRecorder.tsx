@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import toast from 'react-hot-toast';
 
 export function LocalRecorder() {
-  const [recording, setRecording] = useState(true);
+  const [recording, setRecording] = useState(false);
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
