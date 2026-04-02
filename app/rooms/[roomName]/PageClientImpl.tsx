@@ -8,6 +8,7 @@ import { RecordingIndicator } from '@/lib/RecordingIndicator';
 import { SettingsMenu } from '@/lib/SettingsMenu';
 import { LocalRecorder } from '@/lib/LocalRecorder';
 import { TranscriptionPanel } from '@/lib/TranscriptionPanel';
+import { EmployerAuthModal } from '@/lib/EmployerAuthModal';
 import { ConnectionDetails } from '@/lib/types';
 import {
   formatChatMessageLinks,
@@ -44,6 +45,20 @@ export function PageClientImpl(props: {
   name?: string;
   email?: string;
 }) {
+  // ── Employer auth gate ─────────────────────────────────────────────────
+  // null  = modal not yet answered
+  // false = user skipped (guest)
+  // true  = user logged in as employer
+  const [employerAuthDone, setEmployerAuthDone] = React.useState<boolean | null>(null);
+  const [isEmployer, setIsEmployer] = React.useState(false);
+
+  const handleEmployerAuthDone = React.useCallback((employer: boolean, token?: string) => {
+    setIsEmployer(employer);
+    setEmployerAuthDone(true);
+    if (token) sessionStorage.setItem('employer_token', token);
+  }, []);
+
+  // ── PreJoin state ──────────────────────────────────────────────────────
   const [preJoinChoices, setPreJoinChoices] = React.useState<LocalUserChoices | undefined>(
     undefined,
   );
@@ -77,21 +92,29 @@ export function PageClientImpl(props: {
 
   return (
     <main data-lk-theme="default" style={{ height: '100%' }}>
-      {connectionDetails === undefined || preJoinChoices === undefined ? (
-        <div className="prejoin-wrapper">
-          <PreJoin
-            defaults={preJoinDefaults}
-            onSubmit={handlePreJoinSubmit}
-            onError={handlePreJoinError}
+      {/* Step 1: Ask if employer */}
+      {employerAuthDone === null && (
+        <EmployerAuthModal onDone={handleEmployerAuthDone} />
+      )}
+
+      {/* Step 2 & 3: PreJoin → Video Conference */}
+      {employerAuthDone !== null && (
+        connectionDetails === undefined || preJoinChoices === undefined ? (
+          <div className="prejoin-wrapper">
+            <PreJoin
+              defaults={preJoinDefaults}
+              onSubmit={handlePreJoinSubmit}
+              onError={handlePreJoinError}
+            />
+          </div>
+        ) : (
+          <VideoConferenceComponent
+            connectionDetails={connectionDetails}
+            userChoices={preJoinChoices}
+            options={{ codec: props.codec, hq: props.hq }}
+            hasEmail={!!props.email || isEmployer}
           />
-        </div>
-      ) : (
-        <VideoConferenceComponent
-          connectionDetails={connectionDetails}
-          userChoices={preJoinChoices}
-          options={{ codec: props.codec, hq: props.hq }}
-          hasEmail={!!props.email}
-        />
+        )
       )}
     </main>
   );
