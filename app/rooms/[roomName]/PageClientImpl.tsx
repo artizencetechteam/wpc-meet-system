@@ -7,6 +7,7 @@ import { KeyboardShortcuts } from '@/lib/KeyboardShortcuts';
 import { RecordingIndicator } from '@/lib/RecordingIndicator';
 import { SettingsMenu } from '@/lib/SettingsMenu';
 import { LocalRecorder } from '@/lib/LocalRecorder';
+import { TranscriptionPanel } from '@/lib/TranscriptionPanel';
 import { ConnectionDetails } from '@/lib/types';
 import {
   formatChatMessageLinks,
@@ -245,6 +246,7 @@ function VideoConferenceComponent(props: {
         <DebugMode />
         <RecordingIndicator />
         {props.hasEmail && <LocalRecorder />}
+        <TranscriptionPanel />
       </RoomContext.Provider>
     </div>
   );
