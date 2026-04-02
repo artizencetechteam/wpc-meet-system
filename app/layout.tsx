@@ -13,14 +13,6 @@ export const metadata: Metadata = {
     'WPC Video Conferencing provides seamless, high-quality, real-time audio and video experiences.',
   openGraph: {
     url: 'https://wpc-video.example.com',
-    images: [
-      {
-        url: '',
-        width: 2000,
-        height: 1000,
-        type: 'image/png',
-      },
-    ],
     siteName: 'WPC Video Conferencing',
   },
   icons: {
@@ -28,14 +20,6 @@ export const metadata: Metadata = {
       rel: 'icon',
       url: '/favicon.ico',
     },
-    apple: [
-      {
-        rel: 'apple-touch-icon',
-        url: '',
-        sizes: '180x180',
-      },
-      { rel: 'mask-icon', url: '', color: '#070707' },
-    ],
   },
 };
 

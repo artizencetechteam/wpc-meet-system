@@ -209,13 +209,20 @@ function MediaControls({
 function DemoMeetingTab(props: { label: string }) {
   const router = useRouter();
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [e2ee, setE2ee] = useState(false);
   const [sharedPassphrase, setSharedPassphrase] = useState(randomString(64));
 
   const startMeeting = () => {
+    const params = new URLSearchParams();
+    if (name) params.append('name', name);
+    if (email) params.append('email', email);
+    
+    const qs = params.toString() ? `?${params.toString()}` : '';
+
     const dest = e2ee
-      ? `/rooms/${generateRoomId()}#${encodePassphrase(sharedPassphrase)}`
-      : `/rooms/${generateRoomId()}`;
+      ? `/rooms/${generateRoomId()}${qs}#${encodePassphrase(sharedPassphrase)}`
+      : `/rooms/${generateRoomId()}${qs}`;
     router.push(dest);
   };
 
@@ -232,6 +239,20 @@ function DemoMeetingTab(props: { label: string }) {
           placeholder="Enter your name"
           value={name}
           onChange={(e) => setName(e.target.value)}
+        />
+      </div>
+
+      <div className={styles.inputRow}>
+        <label className={styles.inputLabel} htmlFor="demo-email">
+          Email address
+        </label>
+        <input
+          id="demo-email"
+          className={styles.inputField}
+          type="email"
+          placeholder="Enter your email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
       </div>
 
