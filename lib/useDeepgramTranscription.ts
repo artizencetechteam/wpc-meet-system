@@ -1,18 +1,10 @@
 'use client';
 import { useEffect, useRef, useState, useCallback } from 'react';
 
-export interface TranscriptLine {
-  id: string;
-  speaker?: number;
-  text: string;
-  isFinal: boolean;
-  timestamp: Date;
-}
-
 export function useDeepgramTranscription(enabled: boolean) {
-  const [transcriptLines, setTranscriptLines] = useState<TranscriptLine[]>([]);
+  const [currentText, setCurrentText] = useState(''); // latest final sentence
+  const [interimText, setInterimText] = useState('');  // in-progress words
   const [connectionState, setConnectionState] = useState<'idle' | 'connecting' | 'connected' | 'error'>('idle');
-  const [interimText, setInterimText] = useState('');
 
   const wsRef = useRef<WebSocket | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
@@ -37,6 +29,7 @@ export function useDeepgramTranscription(enabled: boolean) {
       wsRef.current = null;
     }
     setConnectionState('idle');
+    setCurrentText('');
     setInterimText('');
   }, []);
 
@@ -59,15 +52,10 @@ export function useDeepgramTranscription(enabled: boolean) {
       try {
         setConnectionState('connecting');
 
-        // Get microphone stream
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        if (!isMounted) {
-          stream.getTracks().forEach((t) => t.stop());
-          return;
-        }
+        if (!isMounted) { stream.getTracks().forEach((t) => t.stop()); return; }
         micStreamRef.current = stream;
 
-        // Build Deepgram streaming WebSocket URL
         const params = new URLSearchParams({
           encoding: 'linear16',
           sample_rate: '16000',
@@ -75,7 +63,6 @@ export function useDeepgramTranscription(enabled: boolean) {
           model: 'nova-2',
           punctuate: 'true',
           interim_results: 'true',
-          diarize: 'false',
           language: 'en-US',
         });
 
@@ -89,19 +76,15 @@ export function useDeepgramTranscription(enabled: boolean) {
           if (!isMounted) return;
           setConnectionState('connected');
 
-          // Set up AudioContext to read raw PCM from the mic
           const audioCtx = new AudioContext({ sampleRate: 16000 });
           audioCtxRef.current = audioCtx;
-
           const source = audioCtx.createMediaStreamSource(stream);
-          // Use ScriptProcessorNode (deprecated but widely supported)
           const processor = audioCtx.createScriptProcessor(4096, 1, 1);
           processorRef.current = processor;
 
           processor.onaudioprocess = (e) => {
             if (ws.readyState !== WebSocket.OPEN) return;
             const input = e.inputBuffer.getChannelData(0);
-            // Convert Float32 → Int16
             const int16 = new Int16Array(input.length);
             for (let i = 0; i < input.length; i++) {
               const s = Math.max(-1, Math.min(1, input[i]));
@@ -119,7 +102,6 @@ export function useDeepgramTranscription(enabled: boolean) {
           try {
             const data = JSON.parse(event.data as string);
             if (data.type !== 'Results') return;
-
             const alt = data.channel?.alternatives?.[0];
             if (!alt || !alt.transcript) return;
 
@@ -130,48 +112,22 @@ export function useDeepgramTranscription(enabled: boolean) {
               setInterimText(text);
             } else {
               setInterimText('');
-              if (text) {
-                setTranscriptLines((prev) => [
-                  ...prev,
-                  {
-                    id: `${Date.now()}-${Math.random()}`,
-                    text,
-                    isFinal: true,
-                    timestamp: new Date(),
-                  },
-                ]);
-              }
+              setCurrentText(text);   // replace (no history)
             }
-          } catch {
-            // ignore parse errors
-          }
+          } catch { /* ignore */ }
         };
 
-        ws.onerror = () => {
-          if (isMounted) setConnectionState('error');
-        };
-
-        ws.onclose = () => {
-          if (isMounted) setConnectionState('idle');
-        };
+        ws.onerror = () => { if (isMounted) setConnectionState('error'); };
+        ws.onclose = () => { if (isMounted) setConnectionState('idle'); };
       } catch (err) {
-        console.error('Deepgram transcription error:', err);
+        console.error('Deepgram error:', err);
         if (isMounted) setConnectionState('error');
       }
     };
 
     start();
-
-    return () => {
-      isMounted = false;
-      cleanup();
-    };
+    return () => { isMounted = false; cleanup(); };
   }, [enabled, cleanup]);
 
-  const clearTranscript = useCallback(() => {
-    setTranscriptLines([]);
-    setInterimText('');
-  }, []);
-
-  return { transcriptLines, interimText, connectionState, clearTranscript };
+  return { currentText, interimText, connectionState };
 }
