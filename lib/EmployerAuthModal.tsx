@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-const API_BASE = process.env.NEXT_PUBLIC_WPC_API_URL ?? 'https://api.artizence.com';
+const API_BASE = process.env.NEXT_PUBLIC_WPC_API_URL ?? 'https://api.wpcjobs.co.uk';
 
 type Step = 'ask' | 'login' | 'loading' | 'done';
 
