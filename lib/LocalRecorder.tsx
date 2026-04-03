@@ -20,7 +20,6 @@ export function LocalRecorder() {
         wrapper.style.display = 'flex';
         wrapper.style.alignItems = 'center';
         wrapper.style.justifyContent = 'center';
-        wrapper.style.marginRight = '0.5rem'; // spacing before the microphone button
         
         // Insert right at the beginning (left of microphone button)
         btnGroup.insertBefore(wrapper, btnGroup.firstChild);
@@ -135,30 +134,39 @@ export function LocalRecorder() {
     }
   };
 
-  const buttonStyle: React.CSSProperties = {
-    background: recording ? '#ef4444' : '#3b82f6',
-    color: 'white',
-    border: 'none',
-    padding: '8px 16px',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontWeight: 'bold',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-  };
-
   const buttonContent = (
-    <button onClick={recording ? stopRecording : startRecording} style={buttonStyle}>
+    <button
+      className="lk-button"
+      onClick={recording ? stopRecording : startRecording}
+      aria-pressed={recording}
+      style={{
+        marginRight:'8px'
+      }}
+    >
       {recording ? (
         <>
-          <div style={{ width: 10, height: 10, borderRadius: '2px', backgroundColor: 'white' }} />
+          <div
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: '2px',
+              backgroundColor: 'currentColor',
+              marginRight: '6px',
+            }}
+          />
           Stop Record
         </>
       ) : (
         <>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            style={{ marginRight: '6px' }}
+          >
             <circle cx="12" cy="12" r="10" />
             <circle cx="12" cy="12" r="3" fill="currentColor" />
           </svg>
