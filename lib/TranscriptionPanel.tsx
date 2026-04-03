@@ -1,11 +1,78 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDeepgramTranscription } from './useDeepgramTranscription';
+import { useRoomContext, useLocalParticipant } from '@livekit/components-react';
+import { RoomEvent } from 'livekit-client';
 
 export function TranscriptionPanel() {
   const [enabled, setEnabled] = useState(false);
 
+  // Local transcription
   const { currentText, interimText, connectionState } = useDeepgramTranscription(enabled);
+  
+  // LiveKit hooks for broadcasting and identity
+  const room = useRoomContext();
+  const { localParticipant } = useLocalParticipant();
+
+  // State to hold the currently displayed caption (from anyone)
+  const [displayCaption, setDisplayCaption] = useState<{
+    name: string;
+    text: string;
+    isInterim: boolean;
+  } | null>(null);
+
+  // 1. Broadcast local transcription when it changes
+  useEffect(() => {
+    if (!enabled || (!interimText && !currentText)) return;
+
+    const textToSend = interimText || currentText;
+    const isInterim = !!interimText;
+    const name = localParticipant.name || localParticipant.identity || 'You';
+
+    // Optimistically update our own display
+    setDisplayCaption({ name, text: textToSend, isInterim });
+
+    // Send payload to others
+    if (room && room.state === 'connected') {
+      const payload = JSON.stringify({ type: 'cc', name, text: textToSend, isInterim });
+      const encoded = new TextEncoder().encode(payload);
+      // We use reliable=false for interims to save bandwidth, true for final
+      room.localParticipant.publishData(encoded, { reliable: !isInterim, topic: 'cc' });
+    }
+  }, [interimText, currentText, enabled, localParticipant, room]);
+
+  // 2. Listen for incoming transcriptions from others
+  useEffect(() => {
+    if (!room || !enabled) return;
+
+    const handleDataReceived = (
+      payload: Uint8Array,
+      participant: any,
+      kind: any,
+      topic?: string
+    ) => {
+      if (topic === 'cc') {
+        try {
+          const decoded = new TextDecoder().decode(payload);
+          const msg = JSON.parse(decoded);
+          if (msg.type === 'cc') {
+            setDisplayCaption({
+              name: msg.name,
+              text: msg.text,
+              isInterim: msg.isInterim,
+            });
+          }
+        } catch (e) {
+          // ignore parsing errors
+        }
+      }
+    };
+
+    room.on(RoomEvent.DataReceived, handleDataReceived);
+    return () => {
+      room.off(RoomEvent.DataReceived, handleDataReceived);
+    };
+  }, [room, enabled]);
 
   const statusColor: Record<string, string> = {
     idle: '#6b7280',
@@ -14,8 +81,13 @@ export function TranscriptionPanel() {
     error: '#ef4444',
   };
 
-  // The text to display: prefer interim while speaking, fall back to last final
-  const displayText = interimText || currentText;
+  // Determine what string to show in the UI
+  let textToRender = '';
+  let isInterimRender = false;
+  if (displayCaption && displayCaption.text) {
+    textToRender = `${displayCaption.name}: ${displayCaption.text}`;
+    isInterimRender = displayCaption.isInterim;
+  }
 
   return (
     <>
@@ -70,7 +142,7 @@ export function TranscriptionPanel() {
       </button>
 
       {/* ── Live subtitle bar — only when enabled and there's text ── */}
-      {enabled && displayText && (
+      {enabled && textToRender && (
         <div
           id="deepgram-caption-bar"
           style={{
@@ -88,10 +160,10 @@ export function TranscriptionPanel() {
             style={{
               background: 'rgba(0,0,0,0.72)',
               backdropFilter: 'blur(8px)',
-              color: interimText ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.95)',
+              color: isInterimRender ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.95)',
               fontSize: '17px',
-              fontWeight: interimText ? 400 : 500,
-              fontStyle: interimText ? 'italic' : 'normal',
+              fontWeight: isInterimRender ? 400 : 500,
+              fontStyle: isInterimRender ? 'italic' : 'normal',
               lineHeight: 1.5,
               padding: '6px 20px',
               borderRadius: '8px',
@@ -100,13 +172,13 @@ export function TranscriptionPanel() {
               display: 'inline-block',
             }}
           >
-            {displayText}
+            {textToRender}
           </span>
         </div>
       )}
 
       {/* ── Connecting hint ── */}
-      {enabled && !displayText && connectionState === 'connecting' && (
+      {enabled && !textToRender && connectionState === 'connecting' && (
         <div style={{
           position: 'fixed', bottom: '82px', left: '50%', transform: 'translateX(-50%)',
           zIndex: 9998, pointerEvents: 'none',

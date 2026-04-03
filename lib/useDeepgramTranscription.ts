@@ -1,13 +1,16 @@
 'use client';
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { useLocalParticipant } from '@livekit/components-react';
+import { Track } from 'livekit-client';
 
 export function useDeepgramTranscription(enabled: boolean) {
-  const [currentText, setCurrentText] = useState(''); // latest final sentence
-  const [interimText, setInterimText] = useState('');  // in-progress words
+  const [currentText, setCurrentText] = useState('');
+  const [interimText, setInterimText] = useState('');
   const [connectionState, setConnectionState] = useState<'idle' | 'connecting' | 'connected' | 'error'>('idle');
 
+  const { localParticipant } = useLocalParticipant();
+
   const wsRef = useRef<WebSocket | null>(null);
-  const micStreamRef = useRef<MediaStream | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
 
@@ -20,10 +23,7 @@ export function useDeepgramTranscription(enabled: boolean) {
       audioCtxRef.current.close();
       audioCtxRef.current = null;
     }
-    if (micStreamRef.current) {
-      micStreamRef.current.getTracks().forEach((t) => t.stop());
-      micStreamRef.current = null;
-    }
+    // We do NOT stop the media track here because it's managed by LiveKit
     if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) {
       wsRef.current.close();
       wsRef.current = null;
@@ -52,9 +52,16 @@ export function useDeepgramTranscription(enabled: boolean) {
       try {
         setConnectionState('connecting');
 
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        if (!isMounted) { stream.getTracks().forEach((t) => t.stop()); return; }
-        micStreamRef.current = stream;
+        // Look for the LiveKit local microphone track
+        const pub = localParticipant.getTrackPublication(Track.Source.Microphone);
+        if (!pub || !pub.track || !pub.track.mediaStreamTrack) {
+           // Mic not published or not available yet
+           if (isMounted) setConnectionState('error');
+           return;
+        }
+
+        const mediaStreamTrack = pub.track.mediaStreamTrack;
+        const stream = new MediaStream([mediaStreamTrack]);
 
         const params = new URLSearchParams({
           encoding: 'linear16',
@@ -112,7 +119,7 @@ export function useDeepgramTranscription(enabled: boolean) {
               setInterimText(text);
             } else {
               setInterimText('');
-              setCurrentText(text);   // replace (no history)
+              setCurrentText(text);
             }
           } catch { /* ignore */ }
         };
@@ -125,9 +132,17 @@ export function useDeepgramTranscription(enabled: boolean) {
       }
     };
 
-    start();
-    return () => { isMounted = false; cleanup(); };
-  }, [enabled, cleanup]);
+    // Give LiveKit a small moment to have the track ready if newly published
+    const timeout = setTimeout(() => {
+      if (isMounted) start();
+    }, 500);
+
+    return () => { 
+      isMounted = false; 
+      clearTimeout(timeout);
+      cleanup(); 
+    };
+  }, [enabled, cleanup, localParticipant]);
 
   return { currentText, interimText, connectionState };
 }
