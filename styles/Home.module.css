@@ -356,6 +356,36 @@
   box-shadow: 0 0 0 3.5px rgba(79, 70, 229, 0.15);
 }
 
+.inputWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.eyeBtn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  transition: color 0.2s;
+  z-index: 2;
+}
+
+.eyeBtn:hover {
+  color: #4f46e5;
+}
+
+.inputFieldWithIcon {
+  padding-right: 44px;
+}
+
 /* ─── Checkbox ─── */
 .checkboxRow {
   display: flex;
