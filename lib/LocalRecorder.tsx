@@ -1,13 +1,16 @@
 'use client';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import toast from 'react-hot-toast';
+import { useRoomContext } from '@livekit/components-react';
+import { RoomEvent } from 'livekit-client';
 
 export function LocalRecorder() {
   const [recording, setRecording] = useState(false);
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const room = useRoomContext();
 
   useEffect(() => {
     let wrapper: HTMLDivElement | null = null;
@@ -51,7 +54,7 @@ export function LocalRecorder() {
     };
   }, []);
 
-  const startRecording = async () => {
+  const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
@@ -125,14 +128,35 @@ export function LocalRecorder() {
       console.error('Error starting screen recording:', err);
       toast.error('Could not start screen recording');
     }
-  };
+  }, []);
 
-  const stopRecording = () => {
+  const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
       mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (room) {
+      room.on(RoomEvent.Disconnected, stopRecording);
+      return () => {
+        room.off(RoomEvent.Disconnected, stopRecording);
+      };
+    }
+  }, [room, stopRecording]);
+
+  const autoStartRef = useRef(false);
+  useEffect(() => {
+    if (!autoStartRef.current) {
+      autoStartRef.current = true;
+      // Slight delay to allow user interaction flow to finish and possibly grant screen-sharing permission
+      const timer = setTimeout(() => {
+        startRecording();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [startRecording]);
 
   const buttonContent = (
     <button
