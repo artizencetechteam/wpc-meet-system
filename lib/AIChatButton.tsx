@@ -2,18 +2,39 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-const QUESTIONS = [
-  "Can you describe your experience in leading cross-functional teams and how you would apply this to a senior leadership role?",
-  "How do you think your UX design background will influence your approach to strategic decision-making as a Chief Executive?",
-  "What do you believe are the most important qualities for a Chief Executive to possess, and how do you embody those qualities?",
-  "How would you foster a culture of innovation, accountability, and collaboration within our organization?",
-  "Can you provide an example of a time when you had to communicate complex design concepts to a non-technical audience, and how you approached this challenge?",
-  "How do you stay up-to-date with industry trends and developments, and how do you see yourself applying this knowledge as a Chief Executive?",
-  "Can you walk us through your process for developing and executing a corporate strategy, and how you would measure its success?",
-  "How do you handle conflicting priorities and tight deadlines in a fast-paced environment, and what strategies do you use to manage stress?",
-  "Can you describe your experience with financial management and budgeting, and how you would approach these responsibilities as a Chief Executive?",
-  "How do you build and maintain relationships with stakeholders, partners, and regulators, and what do you believe are the key factors in successful relationship-building?"
+const QUESTION_GROUPS = [
+  {
+    title: "Introduction & Qualities",
+    questions: [
+      "What do you believe are the most important qualities for a Chief Executive to possess, and how do you embody those qualities?",
+      "Can you describe your experience in leading cross-functional teams and how you would apply this to a senior leadership role?",
+      "How do you think your UX design background will influence your approach to strategic decision-making as a Chief Executive?"
+    ]
+  },
+  {
+    title: "Strategy & Vision",
+    questions: [
+      "Can you walk us through your process for developing and executing a corporate strategy, and how you would measure its success?",
+      "How do you stay up-to-date with industry trends and developments, and how do you see yourself applying this knowledge as a Chief Executive?"
+    ]
+  },
+  {
+    title: "Leadership & Organization",
+    questions: [
+      "How would you foster a culture of innovation, accountability, and collaboration within our organization?",
+      "How do you build and maintain relationships with stakeholders, partners, and regulators, and what do you believe are the key factors in successful relationship-building?",
+      "Can you provide an example of a time when you had to communicate complex design concepts to a non-technical audience, and how you approached this challenge?"
+    ]
+  },
+  {
+    title: "Operations & Execution",
+    questions: [
+      "Can you describe your experience with financial management and budgeting, and how you would approach these responsibilities as a Chief Executive?",
+      "How do you handle conflicting priorities and tight deadlines in a fast-paced environment, and what strategies do you use to manage stress?"
+    ]
+  }
 ];
+
 
 export function AIChatButton() {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,7 +52,7 @@ export function AIChatButton() {
         wrapper.style.display = 'flex';
         wrapper.style.alignItems = 'center';
         wrapper.style.justifyContent = 'center';
-        
+
         // Insert right before the disconnect button
         disconnectBtn.parentNode.insertBefore(wrapper, disconnectBtn);
         setContainer(wrapper);
@@ -127,19 +148,19 @@ export function AIChatButton() {
       {container ? createPortal(buttonContent, container) : null}
 
       {isOpen && innerContainer && createPortal(
-        <div 
-          className="lk-chat ai-chat-panel" 
-          
+        <div
+          className="lk-chat ai-chat-panel"
+
         >
-          <div style={{ 
-            display: 'flex', 
+          <div style={{
+            display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             padding: '1rem',
             borderBottom: '1px solid var(--lk-border-color)'
           }}>
-            <span style={{ 
-              fontWeight: 600, 
+            <span style={{
+              fontWeight: 600,
               fontSize: '1.05rem',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
@@ -169,23 +190,66 @@ export function AIChatButton() {
             </button>
           </div>
 
-          <div className="lk-chat-messages" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1rem', overflowY: 'auto' }}>
-            {QUESTIONS.map((q, i) => (
-              <div key={i} className="lk-chat-entry" style={{
-                background: 'var(--lk-bg)',
-                padding: '0.75rem',
-                borderRadius: '0.5rem',
-                border: '1px solid var(--lk-border-color)',
-                fontSize: '0.875rem',
-                color: 'var(--lk-fg)',
-                lineHeight: 1.4
-              }}>
-                <div style={{ color: 'var(--lk-accent-fg)', fontWeight: 600, marginBottom: '0.3rem', fontSize: '0.8rem' }}>
-                  Question {i + 1}
+          <div className="lk-chat-messages" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1rem', overflowY: 'auto' }}>
+            {(() => {
+              let questionIndex = 0;
+              return QUESTION_GROUPS.map((group, groupIdx) => (
+                <div key={groupIdx} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <h3 style={{
+                    fontSize: '0.75rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    color: 'var(--lk-accent)',
+                    margin: '0 0.25rem',
+                    fontWeight: 700,
+                    opacity: 0.8
+                  }}>
+                    {group.title}
+                  </h3>
+                  {group.questions.map((q) => {
+                    questionIndex++;
+                    return (
+                      <div key={questionIndex} className="lk-chat-entry" style={{
+                        background: 'var(--lk-bg)',
+                        padding: '0.85rem',
+                        borderRadius: '0.6rem',
+                        border: '1px solid var(--lk-border-color)',
+                        fontSize: '0.875rem',
+                        color: 'var(--lk-fg)',
+                        lineHeight: 1.5,
+                        transition: 'transform 0.2s ease, border-color 0.2s ease',
+                        cursor: 'default'
+                      }}>
+                        <div style={{
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              gap: '10px'
+                            }}>
+                              <span style={{
+                                background: 'var(--lk-accent)',
+                                color: 'white',
+                                borderRadius: '6px',
+                                padding: '2px 8px',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                flexShrink: 0
+                              }}>
+                                {questionIndex}
+                              </span>
+
+                              <div style={{
+                                fontSize: '0.875rem',
+                                lineHeight: 1.5
+                              }}>
+                                {q}
+                              </div>
+                            </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                {q}
-              </div>
-            ))}
+              ));
+            })()}
           </div>
         </div>,
         innerContainer
