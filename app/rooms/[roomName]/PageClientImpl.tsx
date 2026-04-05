@@ -9,6 +9,7 @@ import { SettingsMenu } from '@/lib/SettingsMenu';
 import { LocalRecorder } from '@/lib/LocalRecorder';
 import { TranscriptionPanel } from '@/lib/TranscriptionPanel';
 import { EmployerAuthModal } from '@/lib/EmployerAuthModal';
+import { AIChatButton } from '@/lib/AIChatButton';
 import { ConnectionDetails } from '@/lib/types';
 import {
   formatChatMessageLinks,
@@ -113,6 +114,7 @@ export function PageClientImpl(props: {
             userChoices={preJoinChoices}
             options={{ codec: props.codec, hq: props.hq }}
             hasEmail={!!props.email || isEmployer}
+            isEmployer={isEmployer}
           />
         )
       )}
@@ -128,6 +130,7 @@ function VideoConferenceComponent(props: {
     codec: VideoCodec;
   };
   hasEmail?: boolean;
+  isEmployer?: boolean;
 }) {
   const keyProvider = new ExternalE2EEKeyProvider();
   const { worker, e2eePassphrase } = useSetupE2EE();
@@ -270,6 +273,7 @@ function VideoConferenceComponent(props: {
         <RecordingIndicator />
         {props.hasEmail && <LocalRecorder />}
         <TranscriptionPanel />
+        {props.isEmployer && <AIChatButton />}
       </RoomContext.Provider>
     </div>
   );

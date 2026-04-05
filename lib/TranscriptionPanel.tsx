@@ -1,11 +1,53 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDeepgramTranscription } from './useDeepgramTranscription';
 import { useRoomContext, useLocalParticipant } from '@livekit/components-react';
 import { RoomEvent } from 'livekit-client';
 
 export function TranscriptionPanel() {
   const [enabled, setEnabled] = useState(false);
+  
+  // Dragging state
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragRef = useRef({ startX: 0, startY: 0, lastX: 0, lastY: 0, moved: false });
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragRef.current.startX = e.clientX;
+    dragRef.current.startY = e.clientY;
+    dragRef.current.lastX = position.x;
+    dragRef.current.lastY = position.y;
+    dragRef.current.moved = false;
+    setIsDragging(true);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (!isDragging) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const dy = e.clientY - dragRef.current.startY;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+      dragRef.current.moved = true;
+    }
+    setPosition({
+      x: dragRef.current.lastX + dx,
+      y: dragRef.current.lastY + dy,
+    });
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLButtonElement>) => {
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    setIsDragging(false);
+  };
+
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (dragRef.current.moved) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    setEnabled((v) => !v);
+  };
 
   // Local transcription
   const { currentText, interimText, connectionState } = useDeepgramTranscription(enabled);
@@ -94,12 +136,17 @@ export function TranscriptionPanel() {
       {/* ── Fixed toggle button, bottom-right ── */}
       <button
         id="deepgram-transcription-toggle"
-        onClick={() => setEnabled((v) => !v)}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onClick={handleClick}
         title={enabled ? 'Stop Live Captions' : 'Start Live Captions'}
         style={{
           position: 'fixed',
-          bottom: '88px',
-          right: '20px',
+          top: '20px',
+          left: '20px',
+          transform: `translate(${position.x}px, ${position.y}px)`,
           zIndex: 9999,
           background: enabled ? 'rgba(99,102,241,0.92)' : 'rgba(20,20,35,0.88)',
           color: 'white',
@@ -116,8 +163,9 @@ export function TranscriptionPanel() {
           boxShadow: enabled
             ? '0 0 18px rgba(99,102,241,0.45)'
             : '0 4px 16px rgba(0,0,0,0.4)',
-          transition: 'all 0.2s ease',
+          transition: isDragging ? 'none' : 'box-shadow 0.2s ease, background 0.2s ease, border 0.2s ease',
           fontFamily: 'Inter, system-ui, sans-serif',
+          touchAction: 'none', // Prevent screen from moving while dragging
         }}
       >
         {/* Mic icon */}
