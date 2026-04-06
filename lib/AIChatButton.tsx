@@ -143,6 +143,42 @@ export function AIChatButton() {
             z-index: 10;
           }
         }
+
+        .ai-chat-panel .lk-chat-messages {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+          scroll-behavior: smooth;
+        }
+
+        .ai-chat-panel .lk-chat-messages::-webkit-scrollbar {
+          width: 5px;
+        }
+
+        .ai-chat-panel .lk-chat-messages::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .ai-chat-panel .lk-chat-messages::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 10px;
+          transition: background 0.2s ease;
+        }
+
+        .ai-chat-panel .lk-chat-messages::-webkit-scrollbar-thumb:hover {
+          background: var(--lk-accent, #0070f3);
+        }
+
+        .ai-chat-panel .lk-chat-entry {
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+
+        .ai-chat-panel .lk-chat-entry:hover {
+          transform: translateY(-2px);
+          border-color: var(--lk-accent, #0070f3) !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+          background: rgba(255, 255, 255, 0.03) !important;
+        }
       `}</style>
 
       {container ? createPortal(buttonContent, container) : null}
