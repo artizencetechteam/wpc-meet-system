@@ -272,7 +272,7 @@ function VideoConferenceComponent(props: {
         <DebugMode />
         <RecordingIndicator />
         {props.hasEmail && <LocalRecorder />}
-        <TranscriptionPanel />
+        <TranscriptionPanel isEmployer={props.isEmployer || false} />
         {props.isEmployer && <AIChatButton />}
       </RoomContext.Provider>
     </div>

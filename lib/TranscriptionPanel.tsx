@@ -4,9 +4,23 @@ import { useDeepgramTranscription } from './useDeepgramTranscription';
 import { useRoomContext, useLocalParticipant } from '@livekit/components-react';
 import { RoomEvent } from 'livekit-client';
 
-export function TranscriptionPanel() {
-  const [enabled, setEnabled] = useState(false);
+export function TranscriptionPanel({ isEmployer }: { isEmployer: boolean }) {
+  const [enabled, setEnabled] = useState(true);
   
+  // Transcript history for saving at the end
+  const transcriptHistory = useRef<{ timestamp: string; speaker: string; text: string }[]>([]);
+  const startTime = useRef<number>(Date.now());
+
+  const formatTime = (ms: number) => {
+    const seconds = Math.floor(ms / 1000);
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return [h, m, s].map((v) => v.toString().padStart(2, '0')).join(':');
+  };
+
+  const getRelativeTimestamp = () => formatTime(Date.now() - startTime.current);
+
   // Dragging state
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -70,22 +84,32 @@ export function TranscriptionPanel() {
     const textToSend = interimText || currentText;
     const isInterim = !!interimText;
     const name = localParticipant.name || localParticipant.identity || 'You';
+    const role = isEmployer ? 'interviewer' : 'candidate';
 
     // Optimistically update our own display
     setDisplayCaption({ name, text: textToSend, isInterim });
 
+    // Capture final local transcript in history
+    if (!isInterim && currentText) {
+      transcriptHistory.current.push({
+        timestamp: getRelativeTimestamp(),
+        speaker: name,
+        text: currentText,
+      });
+    }
+
     // Send payload to others
     if (room && room.state === 'connected') {
-      const payload = JSON.stringify({ type: 'cc', name, text: textToSend, isInterim });
+      const payload = JSON.stringify({ type: 'cc', name, text: textToSend, isInterim, role });
       const encoded = new TextEncoder().encode(payload);
       // We use reliable=false for interims to save bandwidth, true for final
       room.localParticipant.publishData(encoded, { reliable: !isInterim, topic: 'cc' });
     }
-  }, [interimText, currentText, enabled, localParticipant, room]);
+  }, [interimText, currentText, enabled, localParticipant, room, isEmployer]);
 
   // 2. Listen for incoming transcriptions from others
   useEffect(() => {
-    if (!room || !enabled) return;
+    if (!room) return;
 
     const handleDataReceived = (
       payload: Uint8Array,
@@ -98,11 +122,22 @@ export function TranscriptionPanel() {
           const decoded = new TextDecoder().decode(payload);
           const msg = JSON.parse(decoded);
           if (msg.type === 'cc') {
-            setDisplayCaption({
-              name: msg.name,
-              text: msg.text,
-              isInterim: msg.isInterim,
-            });
+            if (enabled) {
+              setDisplayCaption({
+                name: msg.name,
+                text: msg.text,
+                isInterim: msg.isInterim,
+              });
+            }
+
+            // Capture final remote transcript in history (even if CC display is disabled)
+            if (!msg.isInterim && msg.text) {
+              transcriptHistory.current.push({
+                timestamp: getRelativeTimestamp(),
+                speaker: msg.name || 'Participant',
+                text: msg.text,
+              });
+            }
           }
         } catch (e) {
           // ignore parsing errors
@@ -115,6 +150,50 @@ export function TranscriptionPanel() {
       room.off(RoomEvent.DataReceived, handleDataReceived);
     };
   }, [room, enabled]);
+
+  // 3. POST data to backend on session end
+  useEffect(() => {
+    if (!room) return;
+
+    const saveTranscript = async () => {
+      // Only the employer saves the data to the employer API
+      if (!isEmployer || transcriptHistory.current.length === 0) return;
+
+      const payload = {
+        meeting_transcript: transcriptHistory.current,
+        meeting_code: room.name,
+        joining_link: window.location.href,
+      };
+
+      console.log('Session ended. Sending transcript data to backend:', payload);
+
+      const token = sessionStorage.getItem('employer_token');
+      const apiBase = process.env.NEXT_PUBLIC_WPC_API_URL || 'https://api.wpcjobs.co.uk';
+      try {
+        const response = await fetch(`${apiBase}/api/employer/ai-interview-schedule/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (response.ok) {
+          console.log('Successfully saved interview transcript.');
+        } else {
+          console.error('Failed to save interview transcript:', await response.text());
+        }
+      } catch (error) {
+        console.error('Error sending transcript data:', error);
+      }
+    };
+
+    room.on(RoomEvent.Disconnected, saveTranscript);
+    return () => {
+      room.off(RoomEvent.Disconnected, saveTranscript);
+    };
+  }, [room, isEmployer]);
 
   const statusColor: Record<string, string> = {
     idle: '#6b7280',
