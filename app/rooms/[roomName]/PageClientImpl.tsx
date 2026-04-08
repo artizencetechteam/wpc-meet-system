@@ -10,6 +10,7 @@ import { LocalRecorder } from '@/lib/LocalRecorder';
 import { TranscriptionPanel } from '@/lib/TranscriptionPanel';
 import { EmployerAuthModal } from '@/lib/EmployerAuthModal';
 import { AIChatButton } from '@/lib/AIChatButton';
+import { TranscriptionHistoryButton } from '@/lib/TranscriptionHistoryButton';
 import { ConnectionDetails } from '@/lib/types';
 import {
   formatChatMessageLinks,
@@ -132,6 +133,9 @@ function VideoConferenceComponent(props: {
   hasEmail?: boolean;
   isEmployer?: boolean;
 }) {
+  // Shared transcript history ref — passed to both TranscriptionPanel (writes) and
+  // TranscriptionHistoryButton (reads), so the button can show a live snapshot.
+  const transcriptHistoryRef = React.useRef<{ timestamp: string; speaker: string; text: string }[]>([]);
   const keyProvider = new ExternalE2EEKeyProvider();
   const { worker, e2eePassphrase } = useSetupE2EE();
   const e2eeEnabled = !!(e2eePassphrase && worker);
@@ -272,8 +276,9 @@ function VideoConferenceComponent(props: {
         <DebugMode />
         <RecordingIndicator />
         {props.hasEmail && <LocalRecorder />}
-        <TranscriptionPanel isEmployer={props.isEmployer || false} />
+        <TranscriptionPanel isEmployer={props.isEmployer || false} transcriptHistoryRef={transcriptHistoryRef} />
         {props.isEmployer && <AIChatButton />}
+        <TranscriptionHistoryButton transcriptHistory={transcriptHistoryRef} />
       </RoomContext.Provider>
     </div>
   );

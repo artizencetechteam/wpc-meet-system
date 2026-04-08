@@ -1,14 +1,22 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, MutableRefObject } from 'react';
 import { useDeepgramTranscription } from './useDeepgramTranscription';
 import { useRoomContext, useLocalParticipant } from '@livekit/components-react';
 import { RoomEvent } from 'livekit-client';
 
-export function TranscriptionPanel({ isEmployer }: { isEmployer: boolean }) {
+export function TranscriptionPanel({
+  isEmployer,
+  transcriptHistoryRef,
+}: {
+  isEmployer: boolean;
+  transcriptHistoryRef?: MutableRefObject<{ timestamp: string; speaker: string; text: string }[]>;
+}) {
   const [enabled, setEnabled] = useState(true);
   
   // Transcript history for saving at the end
-  const transcriptHistory = useRef<{ timestamp: string; speaker: string; text: string }[]>([]);
+  // Use the externally provided ref if given, otherwise use a local one
+  const localRef = useRef<{ timestamp: string; speaker: string; text: string }[]>([]);
+  const transcriptHistory = transcriptHistoryRef ?? localRef;
   const startTime = useRef<number>(Date.now());
 
   const formatTime = (ms: number) => {
