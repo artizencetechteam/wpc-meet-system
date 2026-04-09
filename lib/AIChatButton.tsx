@@ -127,7 +127,7 @@ export function AIChatButton() {
         <path d="M12 11v0"></path>
         <path d="M12 15v0"></path>
       </svg>
-      <span style={{ fontSize: '14px', fontWeight: 500 }}>AI Chat</span>
+      <span style={{ fontSize: '14px', fontWeight: 500 }}>AI Question</span>
     </button>
   );
 
