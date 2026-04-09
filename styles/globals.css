@@ -220,6 +220,14 @@ div {
   background: #fee2e2 !important;
   border-color: #fecaca !important;
   color: var(--lk-danger) !important;
+  font-size: 0 !important; /* Hide default "Leave" text */
+}
+.lk-disconnect-button svg {
+  display: none !important; /* Hide the icon */
+}
+.lk-disconnect-button::after {
+  content: 'Submit/END';
+  font-size: 1rem;
 }
 .lk-disconnect-button:hover:not(:disabled) {
   background: var(--lk-danger) !important;
