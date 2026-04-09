@@ -11,7 +11,7 @@ export function TranscriptionPanel({
   isEmployer: boolean;
   transcriptHistoryRef?: MutableRefObject<{ timestamp: string; speaker: string; text: string }[]>;
 }) {
-  const [enabled, setEnabled] = useState(true);
+  const [enabled, setEnabled] = useState(false);
   
   // Transcript history for saving at the end
   // Use the externally provided ref if given, otherwise use a local one
