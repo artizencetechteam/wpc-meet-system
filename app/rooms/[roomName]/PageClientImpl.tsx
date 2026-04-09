@@ -9,6 +9,7 @@ import { SettingsMenu } from '@/lib/SettingsMenu';
 import { LocalRecorder } from '@/lib/LocalRecorder';
 import { TranscriptionPanel } from '@/lib/TranscriptionPanel';
 import { EmployerAuthModal } from '@/lib/EmployerAuthModal';
+import { ConsentModal } from '@/lib/ConsentModal';
 import { AIChatButton } from '@/lib/AIChatButton';
 import { TranscriptionHistoryButton } from '@/lib/TranscriptionHistoryButton';
 import { ConnectionDetails } from '@/lib/types';
@@ -60,6 +61,29 @@ export function PageClientImpl(props: {
     if (token) sessionStorage.setItem('employer_token', token);
   }, []);
 
+  // ── Consent gate ───────────────────────────────────────────────────────
+  // null  = not yet shown (waiting for employer auth)
+  // false = consent not yet given
+  // true  = consent accepted
+  const [consentGiven, setConsentGiven] = React.useState<boolean | null>(null);
+
+  // When employer auth completes, open the consent modal
+  React.useEffect(() => {
+    if (employerAuthDone !== null && consentGiven === null) {
+      setConsentGiven(false);
+    }
+  }, [employerAuthDone, consentGiven]);
+
+  const router = useRouter();
+
+  const handleConsentAccept = React.useCallback(() => {
+    setConsentGiven(true);
+  }, []);
+
+  const handleConsentDecline = React.useCallback(() => {
+    router.push('/');
+  }, [router]);
+
   // ── PreJoin state ──────────────────────────────────────────────────────
   const [preJoinChoices, setPreJoinChoices] = React.useState<LocalUserChoices | undefined>(
     undefined,
@@ -99,8 +123,17 @@ export function PageClientImpl(props: {
         <EmployerAuthModal onDone={handleEmployerAuthDone} />
       )}
 
-      {/* Step 2 & 3: PreJoin → Video Conference */}
-      {employerAuthDone !== null && (
+      {/* Step 2: Recording & participation consent */}
+      {employerAuthDone !== null && consentGiven === false && (
+        <ConsentModal
+          isEmployer={isEmployer}
+          onAccept={handleConsentAccept}
+          onDecline={handleConsentDecline}
+        />
+      )}
+
+      {/* Step 3 & 4: PreJoin → Video Conference */}
+      {employerAuthDone !== null && consentGiven === true && (
         connectionDetails === undefined || preJoinChoices === undefined ? (
           <div className="prejoin-wrapper">
             <PreJoin
