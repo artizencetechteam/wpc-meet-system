@@ -178,6 +178,43 @@ export function AIChatButton({ roomName }: { roomName?: string }) {
     };
   }, []);
 
+  const [panelWidth, setPanelWidth] = useState(320);
+  const [isResizing, setIsResizing] = useState(false);
+
+  useEffect(() => {
+    const handlePointerMove = (e: PointerEvent) => {
+      if (!isResizing) return;
+      if (innerContainer) {
+        const innerRect = innerContainer.getBoundingClientRect();
+        const newWidth = innerRect.right - e.clientX;
+        setPanelWidth(Math.max(250, Math.min(newWidth, Math.max(innerRect.width - 200, 300))));
+      }
+    };
+
+    const handlePointerUp = () => {
+      if (isResizing) {
+        setIsResizing(false);
+        document.body.style.cursor = '';
+      }
+    };
+
+    if (isResizing) {
+      document.addEventListener('pointermove', handlePointerMove);
+      document.addEventListener('pointerup', handlePointerUp);
+    }
+    
+    return () => {
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [isResizing, innerContainer]);
+
+  const handlePointerDownResize = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsResizing(true);
+    document.body.style.cursor = 'col-resize';
+  };
+
   const handleToggle = () => {
     const nextState = !isOpen;
     setIsOpen(nextState);
@@ -269,8 +306,31 @@ export function AIChatButton({ roomName }: { roomName?: string }) {
       {isOpen && innerContainer && createPortal(
         <div
           className="lk-chat ai-chat-panel"
-
+          style={{ 
+            width: `${panelWidth}px`, 
+            minWidth: `${panelWidth}px`,
+            userSelect: isResizing ? 'none' : undefined,
+            position: 'relative'
+          }}
         >
+          {/* Drag Handle */}
+          <div
+            onPointerDown={handlePointerDownResize}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '6px',
+              height: '100%',
+              cursor: 'col-resize',
+              zIndex: 10,
+              backgroundColor: isResizing ? 'var(--lk-accent)' : 'transparent',
+              transition: 'background-color 0.2s',
+              opacity: isResizing ? 0.3 : 0
+            }}
+            onMouseOver={(e) => e.currentTarget.style.opacity = '0.3'}
+            onMouseOut={(e) => e.currentTarget.style.opacity = isResizing ? '0.3' : '0'}
+          />
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
