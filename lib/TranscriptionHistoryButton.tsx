@@ -73,10 +73,41 @@ export function TranscriptionHistoryButton({ transcriptHistory }: Props) {
     }
   }, []);
 
+  // Mutual Exclusivity Logic
+  useEffect(() => {
+    const handlePanelOpen = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail !== 'transcript-history') {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('panel-opened', handlePanelOpen);
+
+    const handleGlobalClick = (e: MouseEvent) => {
+      if (!e.isTrusted) return;
+      const target = e.target as Element;
+      if (target.closest('.lk-chat-toggle')) {
+        window.dispatchEvent(new CustomEvent('panel-opened', { detail: 'native-chat' }));
+      }
+    };
+    document.addEventListener('click', handleGlobalClick);
+
+    return () => {
+      window.removeEventListener('panel-opened', handlePanelOpen);
+      document.removeEventListener('click', handleGlobalClick);
+    };
+  }, []);
+
   // When the panel opens, take a snapshot of the current history
   const handleOpen = () => {
     setEntries([...transcriptHistory.current]);
     setIsOpen(true);
+    
+    const nativeChatBtn = document.querySelector('.lk-chat-toggle') as HTMLButtonElement | null;
+    if (nativeChatBtn && nativeChatBtn.getAttribute('aria-pressed') === 'true') {
+      nativeChatBtn.click();
+    }
+    window.dispatchEvent(new CustomEvent('panel-opened', { detail: 'transcript-history' }));
   };
 
   // Refresh snapshot while panel is open (every 2 s)

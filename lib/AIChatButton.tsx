@@ -153,14 +153,47 @@ export function AIChatButton({ roomName }: { roomName?: string }) {
     }
   }, []);
 
-  // No longer strictly need data-ai-chat-open since flexbox will naturally shift
-  // However, we preserve the animation and base CSS
+  // Mutual Exclusivity Logic
+  useEffect(() => {
+    const handlePanelOpen = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail !== 'ai-chat') {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('panel-opened', handlePanelOpen);
 
+    const handleGlobalClick = (e: MouseEvent) => {
+      if (!e.isTrusted) return;
+      const target = e.target as Element;
+      if (target.closest('.lk-chat-toggle')) {
+        window.dispatchEvent(new CustomEvent('panel-opened', { detail: 'native-chat' }));
+      }
+    };
+    document.addEventListener('click', handleGlobalClick);
+
+    return () => {
+      window.removeEventListener('panel-opened', handlePanelOpen);
+      document.removeEventListener('click', handleGlobalClick);
+    };
+  }, []);
+
+  const handleToggle = () => {
+    const nextState = !isOpen;
+    setIsOpen(nextState);
+    if (nextState) {
+      const nativeChatBtn = document.querySelector('.lk-chat-toggle') as HTMLButtonElement | null;
+      if (nativeChatBtn && nativeChatBtn.getAttribute('aria-pressed') === 'true') {
+        nativeChatBtn.click();
+      }
+      window.dispatchEvent(new CustomEvent('panel-opened', { detail: 'ai-chat' }));
+    }
+  };
 
   const buttonContent = (
     <button
       className="lk-button"
-      onClick={() => setIsOpen(!isOpen)}
+      onClick={handleToggle}
       aria-pressed={isOpen}
       title="AI Questions"
       style={{
