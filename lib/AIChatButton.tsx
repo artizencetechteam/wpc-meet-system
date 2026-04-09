@@ -2,6 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
+const API_BASE = process.env.NEXT_PUBLIC_WPC_API_URL ?? 'http://127.0.0.1:8000';
+
+
 const QUESTION_GROUPS = [
   {
     title: "Introduction & Qualities",
@@ -36,10 +39,57 @@ const QUESTION_GROUPS = [
 ];
 
 
-export function AIChatButton() {
+export function AIChatButton({ roomName }: { roomName?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const [innerContainer, setInnerContainer] = useState<HTMLElement | null>(null);
+
+  const [aiContent, setAiContent] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const hasFetched = React.useRef(false);
+
+  useEffect(() => {
+    if (isOpen && !aiContent && !isLoading && roomName && !hasFetched.current) {
+      hasFetched.current = true;
+      setIsLoading(true);
+      setErrorMsg('');
+      const token = sessionStorage.getItem('employer_token');
+      
+      fetch(`${API_BASE}/api/employer/interview-schedule/8B1C3E/`, {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          setErrorMsg(data.error);
+        } else if (data.ai_interview_question_to_ask?.categories) {
+          const formattedContent = data.ai_interview_question_to_ask.categories.map((c: any) => ({
+            title: c.category,
+            questions: c.questions || []
+          }));
+          setAiContent(formattedContent);
+        } else if (data.ai_generation_question) {
+          setAiContent(data.ai_generation_question);
+        } else if (data.questions || data.ai_questions) {
+          setAiContent(data.questions || data.ai_questions);
+        } else {
+          // Fallback if structure is unknown
+          setAiContent(data);
+        }
+      })
+      .catch(err => {
+        setErrorMsg('Failed to load questions.');
+        console.error(err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+    }
+  }, [isOpen, roomName, aiContent, isLoading]);
 
   useEffect(() => {
     let wrapper: HTMLDivElement | null = null;
@@ -228,63 +278,112 @@ export function AIChatButton() {
 
           <div className="lk-chat-messages" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1rem', overflowY: 'auto' }}>
             {(() => {
-              let questionIndex = 0;
-              return QUESTION_GROUPS.map((group, groupIdx) => (
-                <div key={groupIdx} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  <h3 style={{
-                    fontSize: '0.75rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    color: 'var(--lk-accent)',
-                    margin: '0 0.25rem',
-                    fontWeight: 700,
-                    opacity: 0.8
-                  }}>
-                    {group.title}
-                  </h3>
-                  {group.questions.map((q) => {
-                    questionIndex++;
-                    return (
-                      <div key={questionIndex} className="lk-chat-entry" style={{
-                        background: 'var(--lk-bg)',
-                        padding: '0.85rem',
-                        borderRadius: '0.6rem',
-                        border: '1px solid var(--lk-border-color)',
-                        fontSize: '0.875rem',
-                        color: 'var(--lk-fg)',
-                        lineHeight: 1.5,
-                        transition: 'transform 0.2s ease, border-color 0.2s ease',
-                        cursor: 'default'
-                      }}>
-                        <div style={{
-                              display: 'flex',
-                              alignItems: 'flex-start',
-                              gap: '10px'
-                            }}>
-                              <span style={{
-                                background: 'var(--lk-accent)',
-                                color: 'white',
-                                borderRadius: '6px',
-                                padding: '2px 8px',
-                                fontSize: '0.75rem',
-                                fontWeight: 600,
-                                flexShrink: 0
-                              }}>
-                                {questionIndex}
-                              </span>
+              if (isLoading) {
+                return <div style={{ color: 'var(--lk-fg)', opacity: 0.8, textAlign: 'center', padding: '2.5rem' }}>Loading AI questions...</div>;
+              }
+              
+              if (errorMsg) {
+                return <div style={{ color: '#fca5a5', textAlign: 'center', padding: '2.5rem' }}>{errorMsg}</div>;
+              }
 
-                              <div style={{
-                                fontSize: '0.875rem',
-                                lineHeight: 1.5
+              const groupsToRender = aiContent && Array.isArray(aiContent) && aiContent.length > 0 && aiContent[0].title 
+                ? aiContent 
+                : (!aiContent ? QUESTION_GROUPS : null);
+
+              if (groupsToRender) {
+                let questionIndex = 0;
+                return groupsToRender.map((group: any, groupIdx: number) => (
+                  <div key={groupIdx} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <h3 style={{
+                      fontSize: '0.75rem',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      color: 'var(--lk-accent)',
+                      margin: '0 0.25rem',
+                      fontWeight: 700,
+                      opacity: 0.8
+                    }}>
+                      {group.title}
+                    </h3>
+                    {group.questions.map((q: any) => {
+                      questionIndex++;
+                      return (
+                        <div key={questionIndex} className="lk-chat-entry" style={{
+                          background: 'var(--lk-bg)',
+                          padding: '0.85rem',
+                          borderRadius: '0.6rem',
+                          border: '1px solid var(--lk-border-color)',
+                          fontSize: '0.875rem',
+                          color: 'var(--lk-fg)',
+                          lineHeight: 1.5,
+                          transition: 'transform 0.2s ease, border-color 0.2s ease',
+                          cursor: 'default'
+                        }}>
+                          <div style={{
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: '10px'
                               }}>
-                                {q}
+                                <span style={{
+                                  background: 'var(--lk-accent)',
+                                  color: 'white',
+                                  borderRadius: '6px',
+                                  padding: '2px 8px',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 600,
+                                  flexShrink: 0
+                                }}>
+                                  {questionIndex}
+                                </span>
+
+                                <div style={{
+                                  fontSize: '0.875rem',
+                                  lineHeight: 1.5,
+                                  whiteSpace: 'pre-wrap'
+                                }}>
+                                  {typeof q === 'string' ? q : JSON.stringify(q, null, 2)}
+                                </div>
                               </div>
-                            </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ));
+              }
+
+              // Fallback for flat or unstructured aiContent
+              const contentToRender = typeof aiContent === 'string' ? [aiContent] 
+                                    : Array.isArray(aiContent) ? aiContent 
+                                    : [JSON.stringify(aiContent, null, 2)];
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <h3 style={{
+                    fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em',
+                    color: 'var(--lk-accent)', margin: '0 0.25rem', fontWeight: 700, opacity: 0.8
+                  }}>
+                    Generated Questions
+                  </h3>
+                  {contentToRender.map((q, idx) => (
+                    <div key={idx} className="lk-chat-entry" style={{
+                      background: 'var(--lk-bg)', padding: '0.85rem', borderRadius: '0.6rem',
+                      border: '1px solid var(--lk-border-color)', fontSize: '0.875rem',
+                      color: 'var(--lk-fg)', lineHeight: 1.5, transition: 'transform 0.2s ease, border-color 0.2s ease', cursor: 'default'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                        <span style={{
+                          background: 'var(--lk-accent)', color: 'white', borderRadius: '6px',
+                          padding: '2px 8px', fontSize: '0.75rem', fontWeight: 600, flexShrink: 0
+                        }}>
+                          {idx + 1}
+                        </span>
+                        <div style={{ fontSize: '0.875rem', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                          {typeof q === 'string' ? q : JSON.stringify(q, null, 2)}
+                        </div>
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </div>
-              ));
+              );
             })()}
           </div>
         </div>,

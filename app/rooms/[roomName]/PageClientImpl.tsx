@@ -144,6 +144,7 @@ export function PageClientImpl(props: {
           </div>
         ) : (
           <VideoConferenceComponent
+            roomName={props.roomName}
             connectionDetails={connectionDetails}
             userChoices={preJoinChoices}
             options={{ codec: props.codec, hq: props.hq }}
@@ -157,6 +158,7 @@ export function PageClientImpl(props: {
 }
 
 function VideoConferenceComponent(props: {
+  roomName: string;
   userChoices: LocalUserChoices;
   connectionDetails: ConnectionDetails;
   options: {
@@ -310,7 +312,7 @@ function VideoConferenceComponent(props: {
         <RecordingIndicator />
         {props.hasEmail && <LocalRecorder />}
         <TranscriptionPanel isEmployer={props.isEmployer || false} transcriptHistoryRef={transcriptHistoryRef} />
-        {props.isEmployer && <AIChatButton />}
+        {props.isEmployer && <AIChatButton roomName={props.roomName} />}
         <TranscriptionHistoryButton transcriptHistory={transcriptHistoryRef} />
       </RoomContext.Provider>
     </div>
