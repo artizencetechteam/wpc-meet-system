@@ -13,19 +13,19 @@ export function ConsentModal({ isEmployer, onAccept, onDecline }: Props) {
   const role = isEmployer ? 'Employer' : 'Candidate';
 
   return (
-    <div style={s.overlay}>
+    <div style={s.overlay} className="consent-overlay">
       {/* ── Two-panel card ─────────────────────────────────────────── */}
-      <div style={s.card}>
+      <div style={s.card} className="consent-card">
 
         {/* ══ LEFT PANEL — brand / visual ══ */}
-        <div style={s.leftPanel}>
+        <div style={s.leftPanel} className="consent-left">
           {/* Decorative blobs */}
           <div style={s.blob1} />
           <div style={s.blob2} />
 
-          <div style={s.leftInner}>
+          <div style={s.leftInner} className="consent-left-inner">
             {/* Shield icon */}
-            <div style={s.iconWrap}>
+            <div style={s.iconWrap} className="consent-icon-wrap">
               <div style={s.iconPulse} />
               <div style={s.iconRing}>
                 <ShieldIcon />
@@ -33,8 +33,8 @@ export function ConsentModal({ isEmployer, onAccept, onDecline }: Props) {
             </div>
 
             <p style={s.leftBrand}>WPC Video Conferencing</p>
-            <h1 style={s.leftTitle}>Meeting Consent</h1>
-            <p style={s.leftSub}>
+            <h1 style={s.leftTitle} className="consent-left-title">Meeting Consent</h1>
+            <p style={s.leftSub} className="consent-left-sub">
               Secure, transparent and compliant video interviews — powered by WPC.
             </p>
 
@@ -45,7 +45,7 @@ export function ConsentModal({ isEmployer, onAccept, onDecline }: Props) {
             </div>
 
             {/* Decorative steps */}
-            <div style={s.stepList}>
+            <div style={s.stepList} className="consent-step-list">
               {[
                 { n: '01', label: 'Employer Auth' },
                 { n: '02', label: 'Consent',       active: true },
@@ -63,9 +63,9 @@ export function ConsentModal({ isEmployer, onAccept, onDecline }: Props) {
         </div>
 
         {/* ══ RIGHT PANEL — consent form ══ */}
-        <div style={s.rightPanel}>
-          <div style={s.rightInner}>
-            <h2 style={s.rightTitle}>Recording &amp; Participation Consent</h2>
+        <div style={s.rightPanel} className="consent-right">
+          <div style={s.rightInner} className="consent-right-inner">
+            <h2 style={s.rightTitle} className="consent-right-title">Recording &amp; Participation Consent</h2>
             <p style={s.rightSub}>
               Please review the terms below. Both the employer and candidate must individually
               accept before the meeting begins.
@@ -99,7 +99,7 @@ export function ConsentModal({ isEmployer, onAccept, onDecline }: Props) {
             </label>
 
             {/* Action buttons */}
-            <div style={s.btnRow}>
+            <div style={s.btnRow} className="consent-btn-row">
               <button
                 id="consent-accept-btn"
                 style={{ ...s.btn, ...s.btnAccept, ...(!checked ? s.btnDisabled : {}) }}
@@ -150,6 +150,67 @@ export function ConsentModal({ isEmployer, onAccept, onDecline }: Props) {
           background: rgba(239,68,68,0.08) !important;
           border-color: rgba(239,68,68,0.35) !important;
           color: #ef4444 !important;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+          .consent-overlay {
+            padding: 1rem !important;
+            align-items: flex-start !important;
+            overflow-y: auto !important;
+          }
+          .consent-card {
+            flex-direction: column !important;
+            min-height: auto !important;
+            margin: auto 0 !important;
+          }
+          .consent-left {
+            width: 100% !important;
+          }
+          .consent-left-inner {
+            padding: 32px 24px !important;
+          }
+          .consent-icon-wrap {
+            margin-bottom: 20px !important;
+            width: 56px !important;
+            height: 56px !important;
+          }
+          .consent-left-title {
+            font-size: 24px !important;
+          }
+          .consent-left-sub {
+            margin-bottom: 16px !important;
+            font-size: 13px !important;
+          }
+          .consent-step-list {
+            display: none !important;
+          }
+          .consent-right {
+            width: 100% !important;
+          }
+          .consent-right-inner {
+            padding: 32px 24px !important;
+          }
+          .consent-right-title {
+            font-size: 20px !important;
+            margin-bottom: 6px !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .consent-left-inner {
+            padding: 24px 16px !important;
+          }
+          .consent-right-inner {
+            padding: 24px 16px !important;
+          }
+          .consent-btn-row button {
+            padding: 11px 16px !important;
+            font-size: 14px !important;
+          }
+          .consent-overlay {
+            padding: 0.5rem !important;
+          }
         }
       `}</style>
     </div>
