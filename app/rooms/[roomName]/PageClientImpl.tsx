@@ -8,6 +8,10 @@ import { RecordingIndicator } from '@/lib/RecordingIndicator';
 import { SettingsMenu } from '@/lib/SettingsMenu';
 import { LocalRecorder } from '@/lib/LocalRecorder';
 import { TranscriptionPanel } from '@/lib/TranscriptionPanel';
+import { EmployerAuthModal } from '@/lib/EmployerAuthModal';
+import { ConsentModal } from '@/lib/ConsentModal';
+import { AIChatButton } from '@/lib/AIChatButton';
+import { TranscriptionHistoryButton } from '@/lib/TranscriptionHistoryButton';
 import { ConnectionDetails } from '@/lib/types';
 import {
   formatChatMessageLinks,
@@ -44,6 +48,43 @@ export function PageClientImpl(props: {
   name?: string;
   email?: string;
 }) {
+  // ── Employer auth gate ─────────────────────────────────────────────────
+  // null  = modal not yet answered
+  // false = user skipped (guest)
+  // true  = user logged in as employer
+  const [employerAuthDone, setEmployerAuthDone] = React.useState<boolean | null>(null);
+  const [isEmployer, setIsEmployer] = React.useState(false);
+
+  const handleEmployerAuthDone = React.useCallback((employer: boolean, token?: string) => {
+    setIsEmployer(employer);
+    setEmployerAuthDone(true);
+    if (token) sessionStorage.setItem('employer_token', token);
+  }, []);
+
+  // ── Consent gate ───────────────────────────────────────────────────────
+  // null  = not yet shown (waiting for employer auth)
+  // false = consent not yet given
+  // true  = consent accepted
+  const [consentGiven, setConsentGiven] = React.useState<boolean | null>(null);
+
+  // When employer auth completes, open the consent modal
+  React.useEffect(() => {
+    if (employerAuthDone !== null && consentGiven === null) {
+      setConsentGiven(false);
+    }
+  }, [employerAuthDone, consentGiven]);
+
+  const router = useRouter();
+
+  const handleConsentAccept = React.useCallback(() => {
+    setConsentGiven(true);
+  }, []);
+
+  const handleConsentDecline = React.useCallback(() => {
+    router.push('/');
+  }, [router]);
+
+  // ── PreJoin state ──────────────────────────────────────────────────────
   const [preJoinChoices, setPreJoinChoices] = React.useState<LocalUserChoices | undefined>(
     undefined,
   );
@@ -77,27 +118,47 @@ export function PageClientImpl(props: {
 
   return (
     <main data-lk-theme="default" style={{ height: '100%' }}>
-      {connectionDetails === undefined || preJoinChoices === undefined ? (
-        <div className="prejoin-wrapper">
-          <PreJoin
-            defaults={preJoinDefaults}
-            onSubmit={handlePreJoinSubmit}
-            onError={handlePreJoinError}
-          />
-        </div>
-      ) : (
-        <VideoConferenceComponent
-          connectionDetails={connectionDetails}
-          userChoices={preJoinChoices}
-          options={{ codec: props.codec, hq: props.hq }}
-          hasEmail={!!props.email}
+      {/* Step 1: Ask if employer */}
+      {employerAuthDone === null && (
+        <EmployerAuthModal onDone={handleEmployerAuthDone} />
+      )}
+
+      {/* Step 2: Recording & participation consent */}
+      {employerAuthDone !== null && consentGiven === false && (
+        <ConsentModal
+          isEmployer={isEmployer}
+          onAccept={handleConsentAccept}
+          onDecline={handleConsentDecline}
         />
+      )}
+
+      {/* Step 3 & 4: PreJoin → Video Conference */}
+      {employerAuthDone !== null && consentGiven === true && (
+        connectionDetails === undefined || preJoinChoices === undefined ? (
+          <div className="prejoin-wrapper">
+            <PreJoin
+              defaults={preJoinDefaults}
+              onSubmit={handlePreJoinSubmit}
+              onError={handlePreJoinError}
+            />
+          </div>
+        ) : (
+          <VideoConferenceComponent
+            roomName={props.roomName}
+            connectionDetails={connectionDetails}
+            userChoices={preJoinChoices}
+            options={{ codec: props.codec, hq: props.hq }}
+            hasEmail={!!props.email || isEmployer}
+            isEmployer={isEmployer}
+          />
+        )
       )}
     </main>
   );
 }
 
 function VideoConferenceComponent(props: {
+  roomName: string;
   userChoices: LocalUserChoices;
   connectionDetails: ConnectionDetails;
   options: {
@@ -105,7 +166,11 @@ function VideoConferenceComponent(props: {
     codec: VideoCodec;
   };
   hasEmail?: boolean;
+  isEmployer?: boolean;
 }) {
+  // Shared transcript history ref — passed to both TranscriptionPanel (writes) and
+  // TranscriptionHistoryButton (reads), so the button can show a live snapshot.
+  const transcriptHistoryRef = React.useRef<{ timestamp: string; speaker: string; text: string }[]>([]);
   const keyProvider = new ExternalE2EEKeyProvider();
   const { worker, e2eePassphrase } = useSetupE2EE();
   const e2eeEnabled = !!(e2eePassphrase && worker);
@@ -246,7 +311,9 @@ function VideoConferenceComponent(props: {
         <DebugMode />
         <RecordingIndicator />
         {props.hasEmail && <LocalRecorder />}
-        <TranscriptionPanel />
+        <TranscriptionPanel isEmployer={props.isEmployer || false} transcriptHistoryRef={transcriptHistoryRef} />
+        {props.isEmployer && <AIChatButton roomName={props.roomName} />}
+        <TranscriptionHistoryButton transcriptHistory={transcriptHistoryRef} />
       </RoomContext.Provider>
     </div>
   );

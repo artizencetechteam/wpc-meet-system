@@ -1,13 +1,16 @@
 'use client';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import toast from 'react-hot-toast';
+import { useRoomContext } from '@livekit/components-react';
+import { RoomEvent } from 'livekit-client';
 
 export function LocalRecorder() {
   const [recording, setRecording] = useState(false);
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const room = useRoomContext();
 
   useEffect(() => {
     let wrapper: HTMLDivElement | null = null;
@@ -20,7 +23,6 @@ export function LocalRecorder() {
         wrapper.style.display = 'flex';
         wrapper.style.alignItems = 'center';
         wrapper.style.justifyContent = 'center';
-        wrapper.style.marginRight = '0.5rem'; // spacing before the microphone button
         
         // Insert right at the beginning (left of microphone button)
         btnGroup.insertBefore(wrapper, btnGroup.firstChild);
@@ -52,7 +54,7 @@ export function LocalRecorder() {
     };
   }, []);
 
-  const startRecording = async () => {
+  const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
@@ -126,39 +128,69 @@ export function LocalRecorder() {
       console.error('Error starting screen recording:', err);
       toast.error('Could not start screen recording');
     }
-  };
+  }, []);
 
-  const stopRecording = () => {
+  const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
       mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
     }
-  };
+  }, []);
 
-  const buttonStyle: React.CSSProperties = {
-    background: recording ? '#ef4444' : '#3b82f6',
-    color: 'white',
-    border: 'none',
-    padding: '8px 16px',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontWeight: 'bold',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-  };
+  useEffect(() => {
+    if (room) {
+      room.on(RoomEvent.Disconnected, stopRecording);
+      return () => {
+        room.off(RoomEvent.Disconnected, stopRecording);
+      };
+    }
+  }, [room, stopRecording]);
+
+  const autoStartRef = useRef(false);
+  useEffect(() => {
+    if (!autoStartRef.current) {
+      autoStartRef.current = true;
+      // Slight delay to allow user interaction flow to finish and possibly grant screen-sharing permission
+      const timer = setTimeout(() => {
+        startRecording();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [startRecording]);
 
   const buttonContent = (
-    <button onClick={recording ? stopRecording : startRecording} style={buttonStyle}>
+    <button
+      className="lk-button"
+      onClick={recording ? stopRecording : startRecording}
+      aria-pressed={recording}
+      style={{
+        marginRight:'8px'
+      }}
+    >
       {recording ? (
         <>
-          <div style={{ width: 10, height: 10, borderRadius: '2px', backgroundColor: 'white' }} />
+          <div
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: '2px',
+              backgroundColor: 'currentColor',
+              marginRight: '6px',
+            }}
+          />
           Stop Record
         </>
       ) : (
         <>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            style={{ marginRight: '6px' }}
+          >
             <circle cx="12" cy="12" r="10" />
             <circle cx="12" cy="12" r="3" fill="currentColor" />
           </svg>
