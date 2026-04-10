@@ -173,7 +173,7 @@ export function TranscriptionPanel({
 
       let questions_to_ask = null;
       try {
-        const scheduleRes = await fetch(`${apiBase}/api/employer/interview-schedule/30E4B8/`, {
+        const scheduleRes = await fetch(`${apiBase}/api/employer/interview-schedule/${room.name}/`, {
           headers: {
             'Authorization': token ? `Bearer ${token}` : '',
             'Content-Type': 'application/json'
