@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect, useRef, MutableRefObject } from 'react';
+import toast from 'react-hot-toast';
 import { useDeepgramTranscription } from './useDeepgramTranscription';
 import { useRoomContext, useLocalParticipant } from '@livekit/components-react';
 import { RoomEvent } from 'livekit-client';
@@ -167,16 +168,37 @@ export function TranscriptionPanel({
       // Only the employer saves the data to the employer API
       if (!isEmployer || transcriptHistory.current.length === 0) return;
 
+      const token = sessionStorage.getItem('employer_token');
+      const apiBase = process.env.NEXT_PUBLIC_WPC_API_URL || 'https://api.wpcjobs.co.uk';
+
+      let questions_to_ask = null;
+      try {
+        const scheduleRes = await fetch(`${apiBase}/api/employer/interview-schedule/30E4B8/`, {
+          headers: {
+            'Authorization': token ? `Bearer ${token}` : '',
+            'Content-Type': 'application/json'
+          }
+        });
+        if (scheduleRes.ok) {
+          const scheduleData = await scheduleRes.json();
+          if (scheduleData.ai_interview_question_to_ask) {
+            questions_to_ask = scheduleData.ai_interview_question_to_ask;
+          }
+        }
+      } catch (e) {
+        console.error('Failed to fetch AI questions for transcript payload', e);
+      }
+
       const payload = {
         meeting_transcript: transcriptHistory.current,
         meeting_code: room.name,
         joining_link: window.location.href,
+        ...(questions_to_ask ? { questions_to_ask } : {})
       };
 
       console.log('Session ended. Sending transcript data to backend:', payload);
+      const toastId = toast.loading('Saving transcript to cloud...');
 
-      const token = sessionStorage.getItem('employer_token');
-      const apiBase = process.env.NEXT_PUBLIC_WPC_API_URL || 'https://api.wpcjobs.co.uk';
       try {
         const response = await fetch(`${apiBase}/api/employer/ai-interview-schedule/`, {
           method: 'POST',
@@ -189,11 +211,14 @@ export function TranscriptionPanel({
 
         if (response.ok) {
           console.log('Successfully saved interview transcript.');
+          toast.success('Successfully saved interview transcript!', { id: toastId });
         } else {
           console.error('Failed to save interview transcript:', await response.text());
+          toast.error('Failed to save transcript.', { id: toastId });
         }
       } catch (error) {
         console.error('Error sending transcript data:', error);
+        toast.error('Error saving transcript.', { id: toastId });
       }
     };
 

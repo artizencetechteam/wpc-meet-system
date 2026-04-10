@@ -56,7 +56,7 @@ export function AIChatButton({ roomName }: { roomName?: string }) {
       setErrorMsg('');
       const token = sessionStorage.getItem('employer_token');
       
-      fetch(`${API_BASE}/api/employer/interview-schedule/8B1C3E/`, {
+      fetch(`${API_BASE}/api/employer/interview-schedule/30E4B8/`, {
         headers: {
           'Authorization': token ? `Bearer ${token}` : '',
           'Content-Type': 'application/json'
